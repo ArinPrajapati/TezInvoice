@@ -22,6 +22,7 @@ const invoiceSchema = new mongoose.Schema({
   jobDescription: String,
   totalAmount: Number,
   dueDate: Date,
+  isSent: { type: Boolean, default: false },
   status: { type: String, enum: ["unpaid", "paid"], default: "unpaid" },
   paymentLink: String,
   createdAt: { type: Date, default: Date.now },

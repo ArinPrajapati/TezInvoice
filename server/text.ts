@@ -242,7 +242,7 @@ class InvoiceMaker {
     };
 
     const pdfDoc = printer.createPdfKitDocument(docDefinition as any);
-    pdfDoc.pipe(fs.createWriteStream(fileName));
+    pdfDoc.pipe(fs.createWriteStream(`./invoice/${fileName}`));
     pdfDoc.end();
   }
 }
@@ -354,4 +354,3 @@ const invoiceData: Invoice = {
 const invoiceMaker = new InvoiceHelper(invoiceData);
 
 invoiceMaker.getCombination(1, 2, 3, 1);
-

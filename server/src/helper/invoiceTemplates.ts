@@ -1,8 +1,7 @@
 import PdfPrinter from "pdfmake";
 import fs from "fs";
-import { Invoice } from "../types"; // Assuming Invoice is properly defined in types
+import { Invoice } from "../types";
 
-// Define fonts for PDFMake
 const fonts = {
   Roboto: {
     normal: "./font/Roboto-Regular.ttf",
@@ -14,7 +13,6 @@ const fonts = {
 
 const printer = new PdfPrinter(fonts);
 
-// Define the InvoiceMaker class
 class InvoiceMaker {
   invoice: Invoice;
 
@@ -241,12 +239,11 @@ class InvoiceMaker {
     };
 
     const pdfDoc = printer.createPdfKitDocument(docDefinition as any);
-    pdfDoc.pipe(fs.createWriteStream(fileName));
+    pdfDoc.pipe(fs.createWriteStream(`${fileName}`));
     pdfDoc.end();
   }
 }
 
-// Define the InvoiceHelper class
 class InvoiceHelper {
   invoiceData: Invoice;
   invoiceMaker: InvoiceMaker;
@@ -256,7 +253,6 @@ class InvoiceHelper {
     this.invoiceMaker = new InvoiceMaker(invoiceData);
   }
 
-  // Helper function to map combinations
   getCombination(
     headerType: number,
     clientInfoType: number,
@@ -296,7 +292,6 @@ class InvoiceHelper {
     );
   }
 
-  // Generate a file name based on combination
   getFileName(
     headerType: number,
     clientInfoType: number,
@@ -306,7 +301,6 @@ class InvoiceHelper {
     return `invoice_header${headerType}_clientInfo${clientInfoType}_table${tableType}.pdf`;
   }
 
-  // Generate all combinations of invoices
   generateAllCombinations() {
     for (let headerType = 1; headerType <= 3; headerType++) {
       for (let clientInfoType = 1; clientInfoType <= 3; clientInfoType++) {
