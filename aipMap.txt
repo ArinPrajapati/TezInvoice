@@ -1,0 +1,19 @@
+---/api
+ 	/auth - user auth 
+	 post-	/signup -- for signup of user
+	 post-	/login -- for user login 
+	 post-	/getUser -- for vaildating user login and getting user data 
+	/invoices - invoice related 
+	post - / -- for creating invoice
+	get  - /invoices/:id : getting details of a specfic invoice 
+	get  - /invoices: get all invoices by user (jwt auth here)
+	put  - /invoices/:id : update invocie only if it is unpaid 
+	del  - /invoices/:id : delete invocie (jwt auth here)
+	payment routes 
+        post - /invoices/:id/pay : create a payment link for invoice
+	post - /webhook: handle strip payment webhook to mark the invoices as 'paid'
+	/clients - client routes
+	get /:id/inovies: fetch all invoice for this client 
+	get /client/:id/invoices/:id: view a specific invoice and it payment status 
+
+	

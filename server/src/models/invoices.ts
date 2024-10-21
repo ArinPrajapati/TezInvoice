@@ -1,0 +1,31 @@
+import mongoose from "mongoose";
+
+const invoiceSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  _id: String,
+  serviceName: String,
+  ownerName: String,
+  clientInfo: {
+    name: String,
+    email: String,
+    address: String,
+  },
+  items: [
+    {
+      description: String,
+      quantity: Number,
+      price: Number,
+      subtotal: Number,
+    },
+  ],
+  ownerEmail: String,
+  jobDescription: String,
+  totalAmount: Number,
+  dueDate: Date,
+  status: { type: String, enum: ["unpaid", "paid"], default: "unpaid" },
+  paymentLink: String,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: Date,
+});
+
+export default mongoose.model("Invoice", invoiceSchema);
