@@ -66,4 +66,44 @@ const verifyEmailTemplate = (link: string) => {
     `;
 };
 
-export { magicLinkTemplate, verifyEmailTemplate };
+const invoiceTemplate = (
+  invoiceNumber: string,
+  JobDescription: string,
+  dueDate: string,
+  amountDue: string
+) => {
+  return `
+    <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice #${invoiceNumber}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">
+        Invoice for ${JobDescription}
+      </h2>
+      
+      <p class="text-gray-600 mb-4">
+        Hello, please find your invoice attached below. The total amount due is <strong>$${amountDue}</strong>.
+      </p>
+      <p class="text-gray-600 mb-4">
+        The payment is due by <strong>${dueDate}</strong>. You can view or download your invoice in attachment.
+      </p>
+      
+      <p class="text-gray-500 text-sm mt-6 text-center">
+        If you have any questions, feel free to contact us. Thank you for your business!
+      </p>
+    </div>
+  </body>
+</html>
+  `;
+};
+
+export { magicLinkTemplate, verifyEmailTemplate, invoiceTemplate };

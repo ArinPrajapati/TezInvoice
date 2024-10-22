@@ -15,9 +15,11 @@ const printer = new PdfPrinter(fonts);
 
 class InvoiceMaker {
   invoice: Invoice;
+  fileName: string;
 
   constructor(invoice: Invoice) {
     this.invoice = invoice;
+    this.fileName = `invoice-${invoice._id}.pdf`;
   }
 
   headerType1() {
@@ -197,6 +199,12 @@ class InvoiceMaker {
     footerType: string,
     fileName: string
   ) {
+    const dir = "./public/pdf";
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     const docDefinition = {
       content: [
         this[headerType](),
@@ -239,7 +247,9 @@ class InvoiceMaker {
     };
 
     const pdfDoc = printer.createPdfKitDocument(docDefinition as any);
-    pdfDoc.pipe(fs.createWriteStream(`${fileName}`));
+    pdfDoc.pipe(
+      fs.createWriteStream(`./public/pdf/${fileName}`, { flags: "w" })
+    );
     pdfDoc.end();
   }
 }
@@ -288,17 +298,8 @@ class InvoiceHelper {
       clientInfoMap[clientInfoType],
       tableMap[tableType],
       footerMap[footerType],
-      this.getFileName(headerType, clientInfoType, tableType, footerType)
+      this.invoiceMaker.fileName
     );
-  }
-
-  getFileName(
-    headerType: number,
-    clientInfoType: number,
-    tableType: number,
-    footerType: number
-  ) {
-    return `invoice_header${headerType}_clientInfo${clientInfoType}_table${tableType}.pdf`;
   }
 
   generateAllCombinations() {
