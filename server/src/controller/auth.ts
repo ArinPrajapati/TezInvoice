@@ -14,8 +14,8 @@ const cryptr = new Cryptr(process.env.CRYPTR_KEY as string);
 
 const signup = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
+    const { name, email, password, serviceName } = req.body;
+    if (!name || !email || !password || !serviceName) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
     }
@@ -38,6 +38,7 @@ const signup = async (req: Request, res: Response): Promise<void> => {
       name,
       email,
       password: hashPassword,
+      serviceName,
     });
 
     if (!user) {
@@ -173,7 +174,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.data as jwt.JwtPayload;
     const { name, email, serviceName } = req.body;
-    if (!name || !email || !serviceName ) {
+    if (!name || !email || !serviceName) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
     }
