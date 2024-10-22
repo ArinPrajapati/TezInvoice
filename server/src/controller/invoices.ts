@@ -189,3 +189,104 @@ export const updateInvoice = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const changeInvoiceStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.data as jwt.JwtPayload;
+    const { invoiceId } = req.params;
+    const { status } = req.body;
+    const invoice = await invoices.findOne({ _id: invoiceId });
+    if (!invoice) {
+      res.status(404).json({ message: "Invoice Not Found" });
+      return;
+    }
+    if (invoice && invoice.userId && invoice?.userId.toString() !== id) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+    invoice.status = status;
+    await invoice.save();
+    res.status(200).json({ message: "Invoice Status Updated" });
+    return;
+  } catch (error) {
+    _500("Change Invoice Status Failed", (error as Error).message, res);
+    return;
+  }
+};
+
+export const deleteInvoice = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.data as jwt.JwtPayload;
+    const { invoiceId } = req.params;
+    const invoice = await invoices.findOne({ _id: invoiceId });
+    if (!invoice) {
+      res.status(404).json({ message: "Invoice Not Found" });
+      return;
+    }
+    if (invoice && invoice.userId && invoice?.userId.toString() !== id) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+    await invoices.findByIdAndDelete(invoiceId);
+    res.status(200).json({ message: "Invoice Deleted" });
+    return;
+  } catch (error) {
+    _500("Delete Invoice Failed", (error as Error).message, res);
+    return;
+  }
+};
+
+export const getAllInvoices = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.data as jwt.JwtPayload;
+    const {
+      search,
+      clientName,
+      clientEmail,
+      clientAddress,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const limitNum = parseInt(limit as string, 10);
+    const skip = (parseInt(page as string, 10) - 1) * limitNum;
+
+    const query: any = { userId: id };
+
+    if (clientName || clientEmail || clientAddress) {
+      query["clientInfo"] = {};
+      if (clientName) {
+        query["clientInfo"].name = { $regex: clientName, $options: "i" };
+      }
+      if (clientEmail) {
+        query["clientInfo"].email = { $regex: clientEmail, $options: "i" };
+      }
+      if (clientAddress) {
+        query["clientInfo"].address = { $regex: clientAddress, $options: "i" };
+      }
+    }
+
+    if (search) {
+      query.$or = [
+        { invoiceNumber: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const invoicesList = await invoices.find(query).skip(skip).limit(limitNum);
+
+    const totalInvoices = await invoices.countDocuments(query);
+
+    res.status(200).json({
+      message: "Invoices Found",
+      data: invoicesList,
+      currentPage: parseInt(page as string, 10),
+      totalPages: Math.ceil(totalInvoices / limitNum),
+      totalInvoices,
+    });
+    return;
+  } catch (error) {
+    _500("Get All Invoices Failed", (error as Error).message, res);
+    return;
+  }
+};
