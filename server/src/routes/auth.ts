@@ -7,6 +7,7 @@ import {
   updatePassword,
   verifyEmail,
   verifyEmailSend,
+  getUser,
 } from "../controller/auth";
 import { jwtMiddleware } from "../middleware/jwt";
 
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.get("/user", jwtMiddleware, getUser);
 router.post("/magic-login", magicLogin);
 router.put("/update", jwtMiddleware, update);
 router.put("/update-password", jwtMiddleware, updatePassword);

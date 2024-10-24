@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "../ui/button";
 
 const HeroSection = () => {
   return (
@@ -12,12 +13,12 @@ const HeroSection = () => {
           businesses get paid faster
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+          <Button className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
             Start Free Trial
-          </button>
-          <button className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold border border-blue-600 hover:bg-blue-50 transition-colors">
+          </Button>
+          <Button className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold border border-purple-600 hover:bg-blue-50 transition-colors">
             View Demo
-          </button>
+          </Button>
         </div>
       </div>
     </div>

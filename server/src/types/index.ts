@@ -15,6 +15,9 @@ export interface User {
   email: string;
   isAdmin: boolean;
   _id: string;
+  serviceName: string;
+  password: string;
+  isVerified: boolean;
 }
 
 export interface Invoice {

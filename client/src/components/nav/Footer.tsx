@@ -10,8 +10,6 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-600">
               <li>Features</li>
               <li>Pricing</li>
-              <li>Integrations</li>
-              <li>Updates</li>
             </ul>
           </div>
           <div>
@@ -19,8 +17,6 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-600">
               <li>About</li>
               <li>Customers</li>
-              <li>Careers</li>
-              <li>Blog</li>
             </ul>
           </div>
           <div>
@@ -28,7 +24,6 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-600">
               <li>Documentation</li>
               <li>Support</li>
-              <li>API</li>
               <li>Status</li>
             </ul>
           </div>

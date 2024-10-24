@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 const FeatureCard = ({ icon: Icon, title, description }: any) => (
   <div className="p-6 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
-    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-      <Icon className="h-6 w-6 text-blue-600" />
+    <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+      <Icon className="h-6 w-6 text-purple-600" />
     </div>
     <h3 className="text-lg font-semibold mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>

@@ -240,6 +240,20 @@ const verifyEmail = async (req: Request, res: Response): Promise<void> => {
     _500("Verify Email Failed", (error as Error).message, res);
   }
 };
+
+const getUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.data as jwt.JwtPayload;
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      res.status(404).json({ message: "User Not Found" });
+      return;
+    }
+    res.status(200).json({ message: "User Found", data: user });
+  } catch (error) {
+    _500("Get User Failed", (error as Error).message, res);
+  }
+};
 export {
   signup,
   login,
@@ -248,4 +262,5 @@ export {
   update,
   verifyEmailSend,
   verifyEmail,
+  getUser,
 };
