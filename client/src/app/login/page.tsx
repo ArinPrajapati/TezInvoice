@@ -1,21 +1,32 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 export default function Login() {
+  const [formState, setFormState] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  // Memoized change handler to prevent unnecessary re-renders
+  const handleChange = useCallback((event: any) => {
+    const { name, value, type, checked } = event.target;
+    setFormState((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  }, []);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
+    console.log("Login attempt:", formState);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
             Welcome to <span className="text-purple-600">TezInvoice</span>
@@ -25,8 +36,9 @@ export default function Login() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            {/* Email Input */}
             <div>
               <label
                 htmlFor="email"
@@ -39,20 +51,19 @@ export default function Login() {
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  type="email"
                   id="email"
                   name="email"
-                  type="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg 
-                           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                           placeholder-gray-400"
+                  value={formState.email}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
+            {/* Password Input */}
             <div>
               <label
                 htmlFor="password"
@@ -65,15 +76,13 @@ export default function Login() {
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
-                  type={showPassword ? "text" : "password"}
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg 
-                           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                           placeholder-gray-400"
+                  value={formState.password}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter your password"
                 />
                 <button
@@ -94,13 +103,15 @@ export default function Login() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
-                id="remember-me"
-                name="remember-me"
+                id="rememberMe"
+                name="rememberMe"
                 type="checkbox"
+                checked={formState.rememberMe}
+                onChange={handleChange}
                 className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
               />
               <label
-                htmlFor="remember-me"
+                htmlFor="rememberMe"
                 className="ml-2 block text-sm text-gray-700"
               >
                 Remember me
@@ -117,22 +128,20 @@ export default function Login() {
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg
-                       shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500
-                       transition-colors duration-200"
-            >
-              Sign in
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg
+                     shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500
+                     transition-colors duration-200"
+          >
+            Sign in
+          </button>
 
           <div className="text-center text-sm">
             <span className="text-gray-600">Don't have an account?</span>{" "}
             <a
-              href="#"
+              href="/signup"
               className="font-medium text-purple-600 hover:text-purple-500"
             >
               Sign up now

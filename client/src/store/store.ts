@@ -6,14 +6,17 @@ type Store = {
   token: string;
   path: string;
   loginData: User;
+  publicRoute: boolean;
   setLogin: (login: boolean) => void;
   setToken: (token: string) => void;
   setPath: (path: string) => void;
   setLoginData: (loginData: User) => void;
+  setPublicRoute: (publicRoute: boolean) => void;
 };
 
 const useStore = create<Store>()((set) => ({
-  login: true,
+  login: false,
+  publicRoute: false,
   token: localStorage.getItem("token") || "",
   path: "",
   loginData: {
@@ -25,6 +28,8 @@ const useStore = create<Store>()((set) => ({
     password: "",
     isVerified: false,
   },
+  setPublicRoute: (publicRoute: boolean) =>
+    set((state) => ({ ...state, publicRoute })),
   setLoginData: (loginData: User) => set((state) => ({ ...state, loginData })),
   setLogin: (login: boolean) => set((state) => ({ ...state, login })),
   setToken: (token: string) => set((state) => ({ ...state, token })),

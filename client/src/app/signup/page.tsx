@@ -1,149 +1,96 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { AuthService } from "@/axios/service/authService";
 import { Eye, EyeOff, Mail, Lock, User, Briefcase } from "lucide-react";
-import { z } from "zod";
-
-// Zod schema for form validation
-const signupSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  serviceName: z.string().min(1, "Business name is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-// Define types for form data and errors
-type FormData = {
+import { toast } from "@/hooks/use-toast";
+interface User {
   name: string;
   email: string;
-  password: string;
   serviceName: string;
-};
-
-type Errors = {
-  name?: string;
-  email?: string;
-  password?: string;
-  serviceName?: string;
-  general?: string;
-};
-
+  password: string;
+}
 export default function Signup() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formState, setFormState] = useState<User>({
     name: "",
     email: "",
-    password: "",
     serviceName: "",
+    password: "",
   });
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [errors, setErrors] = useState<Errors>({});
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<User>({
+    name: "",
+    email: "",
+    serviceName: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+  // Memoized change handler to prevent unnecessary re-renders
+  const handleChange = useCallback((event) => {
+    const { name, value } = event.target;
+    setFormState((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // Clear error when user starts typing
-    if (errors[name as keyof Errors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name as keyof Errors]: "",
-      }));
-    }
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    // Simple validation
+    const newErrors: User = {
+      name: "",
+      email: "",
+      serviceName: "",
+      password: "",
+    };
+    if (!formState.name) newErrors.name = "Name is required";
+    if (!formState.email) newErrors.email = "Email is required";
+    if (!formState.serviceName)
+      newErrors.serviceName = "Business name is required";
+    if (!formState.password) newErrors.password = "Password is required";
+
+    setErrors(newErrors);
+
+    // If there are errors, stop the submission
+    if (Object.values(newErrors).some((error) => error)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const { name, email, serviceName, password } = formState;
 
     try {
-      // Validate form data using Zod
-      const validatedData = signupSchema.parse(formData);
-      setIsLoading(true);
-
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedData),
+      const response = await AuthService.signup(
+        email,
+        password,
+        name,
+        serviceName
+      );
+      console.log("Signup response:", response);
+      window.location.href = "/login";
+      toast({
+        title: "Success",
+        description: "Account created successfully",
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
-      // Handle successful signup
-      console.log("Signup successful:", data);
-      // Add your redirect logic here
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Convert Zod errors into a simpler format
-        const formattedErrors: Errors = {};
-        error.errors.forEach((err) => {
-          formattedErrors[err.path[0] as keyof Errors] = err.message;
-        });
-        setErrors(formattedErrors);
-      } else {
-        setErrors({ general: (error as Error).message });
-      }
-    } finally {
-      setIsLoading(false);
+      console.error("Signup error:", error);
+      toast({
+        title: "error",
+        description: (error as Error).message,
+      });
     }
-  };
 
-  const InputField: React.FC<{
-    name: keyof FormData;
-    label: string;
-    type?: string;
-    icon: React.ElementType;
-    placeholder: string;
-  }> = ({ name, label, type = "text", icon: Icon, placeholder }) => (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-        {label}
-      </label>
-      <div className="mt-1 relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          id={name}
-          name={name}
-          type={
-            type === "password" ? (showPassword ? "text" : "password") : type
-          }
-          value={formData[name]}
-          onChange={handleChange}
-          className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-            errors[name] ? "border-red-300" : "border-gray-300"
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-          placeholder={placeholder}
-        />
-        {type === "password" && (
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-            ) : (
-              <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-            )}
-          </button>
-        )}
-      </div>
-      {errors[name] && (
-        <p className="mt-1 text-sm text-red-500">{errors[name]}</p>
-      )}
-    </div>
-  );
+
+    console.log("Signup attempt:", formState);
+
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
             Join <span className="text-purple-600">TezInvoice</span>
@@ -153,45 +100,130 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Error Message */}
-        {errors.general && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-lg text-sm">
-            {errors.general}
-          </div>
-        )}
-
-        {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <InputField
-              name="name"
-              label="Full Name"
-              icon={User}
-              placeholder="Enter your full name"
-            />
-            <InputField
-              name="email"
-              label="Email address"
-              type="email"
-              icon={Mail}
-              placeholder="Enter your email"
-            />
-            <InputField
-              name="serviceName"
-              label="Business/Service Name"
-              icon={Briefcase}
-              placeholder="Enter your business name"
-            />
-            <InputField
-              name="password"
-              label="Password"
-              type="password"
-              icon={Lock}
-              placeholder="Create a password"
-            />
+            {/* Name Input */}
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Full Name
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formState.name}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Email Input */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email address
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formState.email}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter your email"
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Business Name Input */}
+            <div>
+              <label
+                htmlFor="serviceName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Business/Service Name
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Briefcase className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="serviceName"
+                  name="serviceName"
+                  value={formState.serviceName}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter your business name"
+                />
+              </div>
+              {errors.serviceName && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.serviceName}
+                </p>
+              )}
+            </div>
+
+            {/* Password Input */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formState.password}
+                  onChange={handleChange}
+                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Create a password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              )}
+            </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -203,7 +235,6 @@ export default function Signup() {
             {isLoading ? "Creating Account..." : "Create Account"}
           </button>
 
-          {/* Sign In Link */}
           <div className="text-center text-sm">
             <span className="text-gray-600">Already have an account?</span>{" "}
             <a
