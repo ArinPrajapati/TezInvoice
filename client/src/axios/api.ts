@@ -1,17 +1,13 @@
 import axios, {
   AxiosInstance,
-  AxiosResponse,
   AxiosError,
+  AxiosResponse,
   InternalAxiosRequestConfig,
   AxiosRequestHeaders,
-  Axios,
 } from "axios";
 
-// Types
-interface ErrorResponse {
-  message: string;
-  code?: string;
-  details?: unknown;
+interface RequestConfig extends InternalAxiosRequestConfig {
+  retryCount?: number;
 }
 
 interface ApiResponse<T> {
@@ -20,11 +16,12 @@ interface ApiResponse<T> {
   statusText: string;
 }
 
-interface RequestConfig extends InternalAxiosRequestConfig {
-  retryCount?: number;
+interface ErrorResponse {
+  message: string;
+  code: string;
+  details?: any;
 }
 
-// API Client class
 class ApiClient {
   private client: AxiosInstance;
 
@@ -45,7 +42,6 @@ class ApiClient {
         Accept: "application/json",
       },
     });
-
     this.setupInterceptors(client);
     return client;
   }
@@ -70,6 +66,12 @@ class ApiClient {
           originalRequest.retryCount !== 3
         ) {
           originalRequest.retryCount = (originalRequest.retryCount || 0) + 1;
+          await new Promise((resolve) =>
+            setTimeout(
+              resolve,
+              1000 * Math.pow(2, originalRequest.retryCount ?? 0)
+            )
+          ); // Exponential backoff
           return client(originalRequest);
         }
 
@@ -185,7 +187,7 @@ class ApiClient {
       method: "POST",
       url,
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" } as AxiosRequestHeaders,
+      headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(

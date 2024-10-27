@@ -2,59 +2,76 @@
 import React from "react";
 import Header from "../nav/Header";
 import useStore from "@/store/store";
-import { redirect, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { AuthService } from "@/axios/service/authService";
+
+const PUBLIC_ROUTES = ["/login", "/signup", "/"] as const;
+type PublicRoute = (typeof PUBLIC_ROUTES)[number];
 
 const Root = ({ children }: { children: React.ReactNode }) => {
-  const { path, setPath, login, token, setLogin, publicRoute, setPublicRoute } =
-    useStore();
+  const router = useRouter();
+  const { setPath, token, setLogin, setPublicRoute, setLoginData } = useStore();
+
   const pathname = usePathname();
-  const [publicRoutes, setPublicRoutes] = React.useState<string[]>([
-    "/login",
-    "/signup",
-    "/",
-  ]);
+
+  const isPublicRoute = (path: string): path is PublicRoute => {
+    return PUBLIC_ROUTES.includes(path as PublicRoute);
+  };
+
+  const shouldShowHeader = !isPublicRoute(pathname);
+
+  const handleAuthError = () => {
+    localStorage.removeItem("authToken");
+    setLogin(false);
+    router.push("/login");
+  };
 
   React.useEffect(() => {
-    setPath(pathname);
-    if (publicRoutes.includes(pathname)) {
-      setPublicRoute(true);
-    } else {
-      setPublicRoute(false);
-    }
-    if (token.length > 0) {
-      // set logic and hit api to check if token is valid
-      // get it data from it and add it loginData State
-      // setLogin(true);
-    }
-    if (
-      !login &&
-      pathname !== "/login" &&
-      pathname !== "/signup" &&
-      pathname !== "/"
-    ) {
-      setPath("/login");
-      redirect("/login");
-    }
+    const authenticateUser = async () => {
+      try {
+        setPath(pathname);
+        setPublicRoute(isPublicRoute(pathname));
 
-    if (
-      login &&
-      (pathname === "/login" || pathname === "/signup" || pathname === "/")
-    ) {
-      redirect("/dashboard");
-    }
-  }, [pathname]);
+        // Handle authenticated user on public routes
+        if (token && token.length > 0 && isPublicRoute(pathname)) {
+          router.push("/dashboard");
+          return;
+        }
 
-  const shouldShowHeader = pathname !== "/login" && pathname !== "/signup";
+        // Handle unauthenticated user on private routes
+        if (!token && !isPublicRoute(pathname)) {
+          router.push("/login");
+          return;
+        }
+
+        // Validate token and fetch user data if token exists
+        if (token && token.length > 0) {
+          try {
+            const userData = await AuthService.getCurrentUser();
+            setLogin(true);
+            setLoginData(userData);
+          } catch (error) {
+            handleAuthError();
+          }
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        handleAuthError();
+      }
+    };
+
+    authenticateUser();
+  }, []);
 
   return (
     <>
-      {publicRoute ? (
+      {isPublicRoute(pathname) ? (
         <>
           {shouldShowHeader && <Header />}
-          <main>{children}</main>
+          <main className="min-h-screen">{children}</main>
         </>
       ) : (
-        <div className="">
+        <div className="min-h-screen">
           <main>{children}</main>
         </div>
       )}

@@ -17,7 +17,7 @@ type Store = {
 const useStore = create<Store>()((set) => ({
   login: false,
   publicRoute: false,
-  token: localStorage.getItem("token") || "",
+  token: localStorage.getItem("authToken") || "",
   path: "",
   loginData: {
     name: "",
@@ -27,6 +27,7 @@ const useStore = create<Store>()((set) => ({
     serviceName: "",
     password: "",
     isVerified: false,
+    accountLevel: "",
   },
   setPublicRoute: (publicRoute: boolean) =>
     set((state) => ({ ...state, publicRoute })),

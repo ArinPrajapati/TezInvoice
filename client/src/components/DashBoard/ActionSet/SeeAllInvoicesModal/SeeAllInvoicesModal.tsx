@@ -32,12 +32,13 @@ import {
   ChevronRight,
   FileText,
   RefreshCw,
+  InboxIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 
 // Mock data for invoices
-const mockInvoices = Array(50)
+const mockInvoices = Array(0)
   .fill(null)
   .map((_, index) => ({
     id: `INV-${1000 + index}`,
@@ -70,6 +71,32 @@ const SeeAllInvoicesModal = () => {
   const currentInvoices = filteredInvoices.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
+  );
+
+  // Empty state component
+  const EmptyState = () => (
+    <div className="py-12 text-center">
+      <InboxIcon className="mx-auto h-12 w-12 text-purple-200" />
+      <h3 className="mt-4 text-lg font-semibold text-gray-900">
+        No invoices found
+      </h3>
+      <p className="mt-2 text-sm text-purple-500">
+        {clientFilter || dateFilter
+          ? "Try adjusting your filters or clear them to see more results"
+          : "No invoices have been created yet"}
+      </p>
+      {(clientFilter || dateFilter) && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={resetFilters}
+          className="mt-4"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Reset Filters
+        </Button>
+      )}
+    </div>
   );
 
   return (
@@ -149,59 +176,65 @@ const SeeAllInvoicesModal = () => {
         </div>
 
         <div className="max-h-[300px] overflow-auto rounded-md border mt-4">
-          <Table>
-            <TableHeader className="sticky top-0 bg-white">
-              <TableRow>
-                <TableHead>Invoice ID</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentInvoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <Link href={`/invoice/${invoice.id}`} key={invoice.id}>
-                    <TableCell className="font-medium text-purple-900">
-                      {invoice.id}
-                    </TableCell>
-                  </Link>
-                  <TableCell>{invoice.client}</TableCell>
-                  <TableCell>{format(invoice.date, "PPP")}</TableCell>
-                  <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                  <TableCell>{invoice.status}</TableCell>
+          {filteredInvoices.length > 0 ? (
+            <Table>
+              <TableHeader className="sticky top-0 bg-white">
+                <TableRow>
+                  <TableHead>Invoice ID</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {currentInvoices.map((invoice) => (
+                  <TableRow key={invoice.id}>
+                    <Link href={`/invoice/${invoice.id}`} key={invoice.id}>
+                      <TableCell className="font-medium text-purple-900">
+                        {invoice.id}
+                      </TableCell>
+                    </Link>
+                    <TableCell>{invoice.client}</TableCell>
+                    <TableCell>{format(invoice.date, "PPP")}</TableCell>
+                    <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                    <TableCell>{invoice.status}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <EmptyState />
+          )}
         </div>
 
-        <div className="flex items-center justify-between space-x-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-          <div className="text-sm text-muted-foreground">
-            Page {currentPage} of {pageCount}
+        {filteredInvoices.length > 0 && (
+          <div className="flex items-center justify-between space-x-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {pageCount}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, pageCount))
+              }
+              disabled={currentPage === pageCount}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, pageCount))
-            }
-            disabled={currentPage === pageCount}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

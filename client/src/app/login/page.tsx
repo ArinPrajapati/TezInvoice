@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-
+import { toast } from "@/hooks/use-toast";
+import { AuthService } from "@/axios/service/authService";
+import store from "@/store/store";
 export default function Login() {
   const [formState, setFormState] = useState({
     email: "",
@@ -10,7 +12,6 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Memoized change handler to prevent unnecessary re-renders
   const handleChange = useCallback((event: any) => {
     const { name, value, type, checked } = event.target;
     setFormState((prev) => ({
@@ -21,6 +22,20 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    try {
+      AuthService.login(formState.email, formState.password);
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+
+      window.location.href = "/dashboard";
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message,
+      });
+    }
     console.log("Login attempt:", formState);
   };
 

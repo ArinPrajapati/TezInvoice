@@ -8,6 +8,7 @@ interface User {
   serviceName: string;
   password: string;
   isVerified: boolean;
+  accountLevel: string;
 }
 
 interface LoginResponse {
@@ -38,18 +39,12 @@ export class AuthService {
       name,
       serviceName,
     });
-    if (response.status !== 200) {
-      throw new Error("Failed to signup");
-    }
+
     return response.data;
   }
 
   static async getCurrentUser(): Promise<User> {
-    const response = await api.get<User>("/auth/me", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
+    const response = await api.get<User>("/auth/user");
     return response.data;
   }
 }

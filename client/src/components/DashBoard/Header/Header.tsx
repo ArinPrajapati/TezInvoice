@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,14 +12,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { User } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
+import useStore from "@/store/store";
+import { log } from "console";
 
-type AccountLevel = "Free" | "Professional" | "Unlimited";
+const Header: React.FC = () => {
+  const { loginData } = useStore();
+  console.log(loginData.accountLevel);
 
-interface HeaderProps {
-  accountLevel: AccountLevel;
-}
-
-const Header: React.FC<HeaderProps> = ({ accountLevel }) => {
   return (
     <header className="bg-purple-50 shadow-md rounded-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -30,23 +30,23 @@ const Header: React.FC<HeaderProps> = ({ accountLevel }) => {
               border-2
               w-30 h-10
               ${
-                accountLevel === "Free"
+                loginData.accountLevel === "Free"
                   ? "border-purple-500 text-purple-700"
                   : ""
               }
               ${
-                accountLevel === "Professional"
+                loginData.accountLevel === "Professional"
                   ? "border-indigo-500 text-indigo-700"
                   : ""
               }
               ${
-                accountLevel === "Unlimited"
+                loginData.accountLevel === "Unlimited"
                   ? "border-green-500 text-green-700"
                   : ""
               }
             `}
           >
-            {accountLevel}
+            {loginData.accountLevel}
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ accountLevel }) => {
                 size="icon"
                 className="rounded-full bg-purple-600 hover:bg-purple-500 text-black font-bold text-[1.1rem] text-center"
               >
-                {getInitials("John Doe")}
+                {getInitials(loginData.name)}
                 <span className="sr-only">Open user menu</span>
               </Button>
             </DropdownMenuTrigger>

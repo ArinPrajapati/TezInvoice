@@ -68,22 +68,18 @@ export default function Signup() {
         name,
         serviceName
       );
-      console.log("Signup response:", response);
       window.location.href = "/login";
+
       toast({
         title: "Success",
         description: "Account created successfully",
       });
     } catch (error) {
-      console.error("Signup error:", error);
       toast({
         title: "error",
         description: (error as Error).message,
       });
     }
-
-
-    console.log("Signup attempt:", formState);
 
     setIsLoading(false);
   };

@@ -6,4 +6,5 @@ export interface User {
   serviceName: string;
   password: string;
   isVerified: boolean;
+  accountLevel: string;
 }
