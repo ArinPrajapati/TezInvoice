@@ -10,7 +10,7 @@ export const createClient = async (req: Request, res: Response) => {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
     }
-    const newClient = new Client({ userId, name, email, phone });
+    const newClient = new Client({ userId, name, email, phoneNumber: phone });
     await newClient.save();
     res.status(201).json(newClient);
   } catch (error) {

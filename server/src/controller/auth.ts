@@ -56,7 +56,6 @@ const signup = async (req: Request, res: Response): Promise<void> => {
     }
   }
 };
-/// set in cookies
 const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;

@@ -21,6 +21,8 @@ export const createInvoice = async (req: Request, res: Response) => {
       dueDate,
       jobDescription,
       invoiceNumber,
+      paymentMethod,
+      createdAt,
     } = req.body as Invoice;
 
     if (
@@ -31,7 +33,8 @@ export const createInvoice = async (req: Request, res: Response) => {
       !items ||
       !totalAmount ||
       !dueDate ||
-      !invoiceNumber
+      !invoiceNumber ||
+      !paymentMethod
     ) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
@@ -57,10 +60,12 @@ export const createInvoice = async (req: Request, res: Response) => {
       items,
       totalAmount,
       dueDate,
+      createdAt: createdAt ? new Date(createdAt) : new Date(),
       userId: user._id,
       status: "unpaid",
       paymentLink: "",
       invoiceNumber,
+      paymentMethod: paymentMethod as "offline" | "online",
     });
 
     if (!invoice) {

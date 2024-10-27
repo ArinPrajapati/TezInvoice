@@ -45,4 +45,5 @@ export interface Invoice {
   paymentLink?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  paymentMethod?: "offline" | "online";
 }
