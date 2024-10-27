@@ -14,8 +14,14 @@ import { formatDate } from "date-fns";
 export const createInvoice = async (req: Request, res: Response) => {
   try {
     const { id } = req.data as jwt.JwtPayload;
-    const { clientInfo, items, totalAmount, dueDate, jobDescription } =
-      req.body as Invoice;
+    const {
+      clientInfo,
+      items,
+      totalAmount,
+      dueDate,
+      jobDescription,
+      invoiceNumber,
+    } = req.body as Invoice;
 
     if (
       !clientInfo.address ||
@@ -24,7 +30,8 @@ export const createInvoice = async (req: Request, res: Response) => {
       !clientInfo.name ||
       !items ||
       !totalAmount ||
-      !dueDate
+      !dueDate ||
+      !invoiceNumber
     ) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
@@ -53,6 +60,7 @@ export const createInvoice = async (req: Request, res: Response) => {
       userId: user._id,
       status: "unpaid",
       paymentLink: "",
+      invoiceNumber,
     });
 
     if (!invoice) {
@@ -70,6 +78,7 @@ export const createInvoice = async (req: Request, res: Response) => {
 
 export const sendInvoice = async (req: Request, res: Response) => {
   try {
+    // TODO: Add Payment Gateway Integration here to get the payment link
     const { id } = req.data as jwt.JwtPayload;
     const { invoiceId } = req.params;
     const invoice = await invoices.findOne({ _id: invoiceId });
@@ -239,38 +248,33 @@ export const deleteInvoice = async (req: Request, res: Response) => {
 export const getAllInvoices = async (req: Request, res: Response) => {
   try {
     const { id } = req.data as jwt.JwtPayload;
-    const {
-      search,
-      clientName,
-      clientEmail,
-      clientAddress,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { search, clientName, page = 1, limit = 5, date, status } = req.query;
 
     const limitNum = parseInt(limit as string, 10);
     const skip = (parseInt(page as string, 10) - 1) * limitNum;
 
     const query: any = { userId: id };
 
-    if (clientName || clientEmail || clientAddress) {
+    if (clientName && clientName !== "") {
       query["clientInfo"] = {};
       if (clientName) {
         query["clientInfo"].name = { $regex: clientName, $options: "i" };
       }
-      if (clientEmail) {
-        query["clientInfo"].email = { $regex: clientEmail, $options: "i" };
-      }
-      if (clientAddress) {
-        query["clientInfo"].address = { $regex: clientAddress, $options: "i" };
-      }
     }
 
-    if (search) {
+    if (search && search !== "") {
       query.$or = [
         { invoiceNumber: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ];
+    }
+
+    if (date && date !== "") {
+      query.createdAt = { $gte: new Date(date as string) };
+    }
+
+    if (status && status !== "") {
+      query.status = status;
     }
 
     const invoicesList = await invoices.find(query).skip(skip).limit(limitNum);

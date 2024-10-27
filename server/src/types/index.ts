@@ -22,6 +22,7 @@ export interface User {
 
 export interface Invoice {
   _id: string;
+  invoiceNumber: string;
   userId: string;
   serviceName: String;
   ownerName: String;

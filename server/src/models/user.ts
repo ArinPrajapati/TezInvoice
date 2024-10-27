@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    accountLevel: {
+      type: String,
+      enum: ["Free", "Professional", "Unlimited"],
+      default: "Free",
+      required: true,
+    },
     invoicesLimit: {
       type: Number,
       default: 5,

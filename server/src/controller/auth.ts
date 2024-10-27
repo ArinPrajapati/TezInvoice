@@ -249,7 +249,7 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ message: "User Not Found" });
       return;
     }
-    res.status(200).json({ message: "User Found", data: user });
+    res.status(200).json(user);
   } catch (error) {
     _500("Get User Failed", (error as Error).message, res);
   }
