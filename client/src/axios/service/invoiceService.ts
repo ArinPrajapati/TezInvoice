@@ -68,4 +68,8 @@ export class InvoiceService {
     );
     return response.data;
   }
+  static async getUnpaidInvoices(): Promise<Invoice[]> {
+    const response = await api.get<Invoice[]>("/invoices?status=unpaid");
+    return response.data;
+  }
 }

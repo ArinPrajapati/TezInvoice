@@ -20,10 +20,10 @@ export default function Login() {
     }));
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      AuthService.login(formState.email, formState.password);
+      await AuthService.login(formState.email, formState.password);
       toast({
         title: "Success",
         description: "Logged in successfully",

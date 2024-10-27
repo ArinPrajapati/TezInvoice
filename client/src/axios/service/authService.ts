@@ -18,6 +18,7 @@ interface LoginResponse {
 
 export class AuthService {
   static async login(email: string, password: string): Promise<LoginResponse> {
+    console.log("login");
     const response = await api.post<LoginResponse>("/auth/login", {
       email,
       password,
@@ -33,6 +34,7 @@ export class AuthService {
     name: string,
     serviceName: string
   ): Promise<User> {
+    console.log("signup");
     const response = await api.post<User>("/auth/signup", {
       email,
       password,
@@ -44,6 +46,7 @@ export class AuthService {
   }
 
   static async getCurrentUser(): Promise<User> {
+    "getCurrentUser";
     const response = await api.get<User>("/auth/user");
     return response.data;
   }

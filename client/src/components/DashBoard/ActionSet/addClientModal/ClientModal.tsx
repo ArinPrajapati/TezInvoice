@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ClientService } from "@/axios/service/clientService";
+import useStore from "@/store/store";
 import {
   Dialog,
   DialogContent,
@@ -16,18 +18,25 @@ import {
 import { PlusCircle } from "lucide-react";
 
 const AddClientModal = () => {
+  const { loginData } = useStore();
   const [open, setOpen] = useState(false);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically send the data to your backend
+    await ClientService.createClient({
+      name: clientName,
+      email,
+      phone,
+      address,
+      userId: loginData?._id,
+    });
     console.log({ clientName, email, phone, address });
     setOpen(false);
-    // Reset form
     setClientName("");
     setEmail("");
     setPhone("");

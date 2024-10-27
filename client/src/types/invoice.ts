@@ -1,11 +1,11 @@
 export interface Invoice {
-  _id: string;
+  _id?: string;
   invoiceNumber: string;
-  userId: string;
-  serviceName: String;
-  ownerName: String;
-  ownerEmail: String;
-  clientInfo: {
+  userId?: string;
+  serviceName?: String;
+  ownerName?: String;
+  ownerEmail?: String;
+  clientInfo?: {
     name: string;
     email: string;
     address: string;
@@ -16,10 +16,10 @@ export interface Invoice {
     price: number;
     subtotal: number;
   }[];
-  jobDescription: string;
-  totalAmount: number;
-  dueDate: Date;
-  status: "unpaid" | "paid";
+  jobDescription?: string;
+  totalAmount?: number;
+  dueDate?: Date;
+  status?: "unpaid" | "paid";
   paymentLink?: string;
   createdAt?: Date;
   updatedAt?: Date;

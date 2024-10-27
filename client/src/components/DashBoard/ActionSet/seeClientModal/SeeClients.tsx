@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,49 +19,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { FileQuestion, Search, Users } from "lucide-react";
+import {
+  FileQuestion,
+  Search,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { ClientService } from "@/axios/service/clientService";
 
 interface Client {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
 }
 
-// const mockClients: Client[] = [
-//   {
-//     id: 1,
-//     name: "Acme Corp",
-//     email: "contact@acme.com",
-//     phone: "123-456-7890",
-//   },
-//   {
-//     id: 2,
-//     name: "Globex Corporation",
-//     email: "info@globex.com",
-//     phone: "098-765-4321",
-//   },
-//   {
-//     id: 3,
-//     name: "Initech",
-//     email: "support@initech.com",
-//     phone: "555-123-4567",
-//   },
-//   {
-//     id: 4,
-//     name: "Umbrella Corporation",
-//     email: "info@umbrella.com",
-//     phone: "777-888-9999",
-//   },
-//   {
-//     id: 5,
-//     name: "Hooli",
-//     email: "contact@hooli.com",
-//     phone: "111-222-3333",
-//   },
-// ];
+const ITEMS_PER_PAGE = 3;
 
-const mockClients: Client[] = [];
 const EmptyState = ({ searchTerm }: { searchTerm: string }) => (
   <div className="flex flex-col items-center justify-center py-12">
     <FileQuestion className="h-12 w-12 text-purple-200 mb-4" />
@@ -78,19 +53,125 @@ const EmptyState = ({ searchTerm }: { searchTerm: string }) => (
   </div>
 );
 
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => (
+  <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+    <div className="flex flex-1 justify-between sm:hidden">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
+    </div>
+    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm text-gray-700">
+          Page <span className="font-medium">{currentPage}</span> of{" "}
+          <span className="font-medium">{totalPages}</span>
+        </p>
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="flex items-center"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="flex items-center"
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
 const SeeAllClientsModal = () => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredClients = mockClients.filter(
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const fetchedClients = await ClientService.getClients();
+        setClients(fetchedClients);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        setError("Failed to load clients. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Initial fetch
+    fetchClients();
+
+    // Subscribe to client updates
+    const unsubscribe = ClientService.subscribe((updatedClients) => {
+      setClients(updatedClients);
+    });
+
+    // Cleanup subscription when component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const filteredClients = clients.filter(
     (client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phone.includes(searchTerm)
+      client?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      client?.email?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      client?.phoneNumber?.includes(searchTerm)
+  );
+
+  const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedClients = filteredClients.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -102,9 +183,9 @@ const SeeAllClientsModal = () => {
         >
           <Users className="mr-2 h-5 w-5" />
           See All Clients
-          {mockClients.length > 0 && (
+          {clients.length > 0 && (
             <span className="ml-2 bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
-              {mockClients.length}
+              {clients.length}
             </span>
           )}
         </Button>
@@ -127,53 +208,66 @@ const SeeAllClientsModal = () => {
               className="pl-8"
             />
           </div>
-          {filteredClients.length > 0 ? (
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%]">Name</TableHead>
-                    <TableHead className="w-[35%]">Email</TableHead>
-                    <TableHead className="w-[25%]">Phone</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClients.map((client) => (
-                    <TableRow
-                      key={client.id}
-                      className="hover:bg-purple-50 cursor-pointer"
-                    >
-                      <TableCell className="font-medium">
-                        {client.name}
-                      </TableCell>
-                      <TableCell>
-                        <a
-                          href={`mailto:${client.email}`}
-                          className="text-purple-600 hover:text-purple-800"
-                        >
-                          {client.email}
-                        </a>
-                      </TableCell>
-                      <TableCell>
-                        <a
-                          href={`tel:${client.phone}`}
-                          className="text-purple-600 hover:text-purple-800"
-                        >
-                          {client.phone}
-                        </a>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
             </div>
+          ) : error ? (
+            <div className="text-red-600 text-center py-4">{error}</div>
+          ) : filteredClients.length > 0 ? (
+            <>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Name</TableHead>
+                      <TableHead className="w-[35%]">Email</TableHead>
+                      <TableHead className="w-[25%]">Phone</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedClients.map((client) => (
+                      <TableRow
+                        key={client.id}
+                        className="hover:bg-purple-50 cursor-pointer"
+                      >
+                        <TableCell className="font-medium">
+                          {client.name}
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={`mailto:${client.email}`}
+                            className="text-purple-600 hover:text-purple-800"
+                          >
+                            {client.email}
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={`tel:${client.phoneNumber}`}
+                            className="text-purple-600 hover:text-purple-800"
+                          >
+                            {client.phoneNumber}
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="text-sm text-gray-500 text-center">
+                Showing {startIndex + 1}-
+                {Math.min(startIndex + ITEMS_PER_PAGE, filteredClients.length)}{" "}
+                of {filteredClients.length} clients
+              </div>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           ) : (
             <EmptyState searchTerm={searchTerm} />
-          )}
-          {filteredClients.length > 0 && (
-            <div className="text-sm text-gray-500 text-center">
-              Showing {filteredClients.length} of {mockClients.length} clients
-            </div>
           )}
         </div>
       </DialogContent>
