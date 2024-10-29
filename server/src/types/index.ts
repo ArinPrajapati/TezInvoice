@@ -21,7 +21,7 @@ export interface User {
 }
 
 export interface Invoice {
-  _id: string;
+  _id: any;
   invoiceNumber: string;
   userId: string;
   serviceName: String;

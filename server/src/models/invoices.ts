@@ -2,14 +2,12 @@ import mongoose from "mongoose";
 
 const invoiceSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  _id: String,
   invoiceNumber: String,
   serviceName: String,
   ownerName: String,
   clientInfo: {
     name: String,
     email: String,
-    address: String,
   },
   items: [
     {

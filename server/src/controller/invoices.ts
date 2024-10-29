@@ -26,10 +26,8 @@ export const createInvoice = async (req: Request, res: Response) => {
     } = req.body as Invoice;
 
     if (
-      !clientInfo.address ||
+
       !jobDescription ||
-      !clientInfo.email ||
-      !clientInfo.name ||
       !items ||
       !totalAmount ||
       !dueDate ||
@@ -122,7 +120,7 @@ export const sendInvoice = async (req: Request, res: Response) => {
       subject: "Invoice",
       text: "Invoice",
       html: invoiceTemplate(
-        invoice._id as string,
+        invoice._id as unknown as string,
         invoice.jobDescription as string,
         formatDate(invoice.dueDate?.toISOString() as string, "yyyy-MM-dd"),
         invoice.totalAmount as unknown as string
@@ -274,7 +272,7 @@ export const getAllInvoices = async (req: Request, res: Response) => {
       ];
     }
 
-    if (date && date !== "") {
+    if (date && date !== "" && date !== "undefined") {
       query.createdAt = { $gte: new Date(date as string) };
     }
 
