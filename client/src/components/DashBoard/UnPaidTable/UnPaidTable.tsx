@@ -178,7 +178,7 @@ const UnPaidTable: React.FC = () => {
         <div className="flex items-center bg-white px-4 py-2 rounded-lg">
           <IndianRupee   className="h-5 w-5 text-purple-600 mr-2" />
           <span className="font-semibold text-purple-800">
-            Total: ₹{totalOutstanding}
+            Total: {totalOutstanding}
           </span>
         </div>
       </div>
@@ -208,7 +208,7 @@ const UnPaidTable: React.FC = () => {
               >
                 <TableCell className="font-medium text-purple-900">
                   <Link
-                    href={`/invoice/₹{invoice._id}`}
+                    href={`/invoice/${invoice._id}`}
                     className="hover:underline"
                   >
                     {invoice.invoiceNumber}

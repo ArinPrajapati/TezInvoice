@@ -59,7 +59,6 @@ const CreateInvoice = () => {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Form states
   const [items, setItems] = useState<InvoiceItem[]>([
     { description: "", quantity: 1, price: 0, subtotal: 0 },
   ]);
@@ -75,7 +74,6 @@ const CreateInvoice = () => {
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
 
-  // UI states
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -98,7 +96,6 @@ const CreateInvoice = () => {
       name: filteredClient?.name || "",
       email: filteredClient?.email || "",
     });
-    // Clear the client error when a selection is made
     if (value) {
       setFormErrors((prev) => {
         const newErrors = { ...prev };
@@ -107,6 +104,7 @@ const CreateInvoice = () => {
       });
     }
   };
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -131,14 +129,13 @@ const CreateInvoice = () => {
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!selectedClient) errors.client = "Please select a client";
+    if (!selectedClient.name) errors.client = "Please select a client";
     if (!invoiceNumber.trim())
       errors.invoiceNumber = "Invoice number is required";
     if (!jobDescription.trim())
       errors.jobDescription = "Job description is required";
     if (!paymentMethod) errors.paymentMethod = "Please select a payment method";
 
-    // Validate items
     if (items.length === 0) {
       errors.items = "At least one item is required";
     } else {
@@ -177,12 +174,27 @@ const CreateInvoice = () => {
     field: keyof InvoiceItem,
     value: string | number
   ) => {
+    console.log(field, value);
     const newItems = [...items];
+
+    // Convert `value` to a number only if it's `quantity` or `price`
+    const updatedValue =
+      field === "quantity" || field === "price" ? Number(value) : value;
+
+    // Update the item
     newItems[index] = {
       ...newItems[index],
       [field]: field === "description" ? value : Number(value),
-      subtotal: newItems[index].quantity * newItems[index].price,
+      [field]: updatedValue,
+      subtotal:
+        field === "quantity" || field === "price"
+          ? (field === "quantity"
+              ? Number(updatedValue)
+              : newItems[index].quantity) *
+            (field === "price" ? Number(updatedValue) : newItems[index].price)
+          : newItems[index].quantity * newItems[index].price,
     };
+
     setItems(newItems);
   };
 
@@ -222,8 +234,7 @@ const CreateInvoice = () => {
 
     try {
       setIsSubmitting(true);
-      // await InvoiceService.createInvoice(invoiceData);
-      console.log(invoiceData)
+      await InvoiceService.createInvoice(invoiceData);
 
       toast({
         title: "Success",
@@ -242,7 +253,6 @@ const CreateInvoice = () => {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="flex items-center mb-6 space-x-4">
@@ -367,6 +377,7 @@ const CreateInvoice = () => {
                   type="number"
                   placeholder="Qty"
                   value={item.quantity}
+                  min={1}
                   onChange={(e) =>
                     updateItem(index, "quantity", e.target.value)
                   }
@@ -385,9 +396,8 @@ const CreateInvoice = () => {
                   type="number"
                   placeholder="Price"
                   value={item.price}
-                  onChange={(e) =>
-                    updateItem(index, "price", e.target.value)
-                  }
+                  min={0}
+                  onChange={(e) => updateItem(index, "price", e.target.value)}
                   className={
                     formErrors[`item-${index}-price`] ? "border-red-500" : ""
                   }
@@ -512,7 +522,7 @@ const CreateInvoice = () => {
 
         <div className="flex justify-between items-center">
           <div className="text-xl font-bold">
-            Total Amount: ${calculateTotal().toFixed(2)}
+            Total Amount: ₹{calculateTotal().toFixed(2)}
           </div>
           <Button
             type="submit"

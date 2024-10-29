@@ -26,7 +26,7 @@ export class InvoiceService {
   }: {
     clientName?: string;
     page?: number;
-    date?: string;
+    date?: Date;
   }): Promise<getAllInvoicesResponse> {
     const response = await api.get<getAllInvoicesResponse>(
       `invoices?clientName=${clientName}&page=${page}&date=${date}`,

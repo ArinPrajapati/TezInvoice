@@ -83,10 +83,10 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
                   <TableCell>{item.description}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>
                   <TableCell className="text-right">
-                    ${item?.price?.toFixed(2)}
+                    ₹{item?.price?.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right">
-                    ${item.price * item.quantity}
+                    ₹{item.price * item.quantity}
                   </TableCell>
                 </TableRow>
               ))}
@@ -94,7 +94,7 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           </Table>
           <div className="mt-4 text-right">
             <p className="font-semibold text-lg">
-              Total: ${invoiceData?.totalAmount?.toFixed(2)}
+              Total: ₹{invoiceData?.totalAmount?.toFixed(2)}
             </p>
           </div>
         </CardContent>

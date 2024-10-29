@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,23 +36,21 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
-
-// Mock data for invoices
-const mockInvoices = Array(0)
-  .fill(null)
-  .map((_, index) => ({
-    id: `INV-${1000 + index}`,
-    client: `Client ${index + 1}`,
-    date: new Date(2023, 0, 1 + index),
-    amount: Math.floor(Math.random() * 10000) / 100,
-    status: Math.random() > 0.5 ? "Paid" : "Unpaid",
-  }));
+import { Invoice } from "@/types/invoice";
+import { InvoiceService } from "@/axios/service/invoiceService";
 
 const SeeAllInvoicesModal = () => {
   const [open, setOpen] = useState(false);
   const [clientFilter, setClientFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [debouncedClientFilter, setDebouncedClientFilter] =
+    useState(clientFilter);
+  const [debouncedDateFilter, setDebouncedDateFilter] = useState<
+    Date | undefined
+  >(dateFilter);
   const itemsPerPage = 5;
 
   const resetFilters = () => {
@@ -61,19 +59,36 @@ const SeeAllInvoicesModal = () => {
     setCurrentPage(1);
   };
 
-  const filteredInvoices = mockInvoices.filter(
-    (invoice) =>
-      invoice.client.toLowerCase().includes(clientFilter.toLowerCase()) &&
-      (!dateFilter || invoice.date.toDateString() === dateFilter.toDateString())
-  );
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedClientFilter(clientFilter);
+      setDebouncedDateFilter(dateFilter);
+    }, 500);
 
-  const pageCount = Math.ceil(filteredInvoices.length / itemsPerPage);
-  const currentInvoices = filteredInvoices.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+    return () => clearTimeout(handler);
+  }, [clientFilter, dateFilter]);
 
-  // Empty state component
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await InvoiceService.getAllInvoices({
+          clientName: debouncedClientFilter,
+          date: debouncedDateFilter,
+          page: currentPage,
+        });
+        console.log(
+          response.data.forEach((invoice) => console.log(invoice.invoiceNumber))
+        );
+        setInvoices(response.data);
+        setTotalPages(response.totalPages);
+      } catch (error) {
+        console.error("Failed to fetch invoices:", error);
+      }
+    };
+
+    fetchInvoices();
+  }, [debouncedClientFilter, debouncedDateFilter, currentPage]);
+
   const EmptyState = () => (
     <div className="py-12 text-center">
       <InboxIcon className="mx-auto h-12 w-12 text-purple-200" />
@@ -119,7 +134,7 @@ const SeeAllInvoicesModal = () => {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Filter container with reset button */}
+        {/* Filters */}
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -160,8 +175,6 @@ const SeeAllInvoicesModal = () => {
               </Popover>
             </div>
           </div>
-
-          {/* Reset filters button */}
           {(clientFilter || dateFilter) && (
             <Button
               variant="ghost"
@@ -175,8 +188,9 @@ const SeeAllInvoicesModal = () => {
           )}
         </div>
 
+        {/* Table */}
         <div className="max-h-[300px] overflow-auto rounded-md border mt-4">
-          {filteredInvoices.length > 0 ? (
+          {invoices.length > 0 ? (
             <Table>
               <TableHeader className="sticky top-0 bg-white">
                 <TableRow>
@@ -188,16 +202,18 @@ const SeeAllInvoicesModal = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentInvoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <Link href={`/invoice/${invoice.id}`} key={invoice.id}>
-                      <TableCell className="font-medium text-purple-900">
-                        {invoice.id}
-                      </TableCell>
-                    </Link>
-                    <TableCell>{invoice.client}</TableCell>
-                    <TableCell>{format(invoice.date, "PPP")}</TableCell>
-                    <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice._id}>
+                    <TableCell className="font-medium text-purple-900">
+                      <Link href={`/invoice/${invoice._id}`} key={invoice._id}>
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{invoice?.clientInfo?.name}</TableCell>
+                    <TableCell>{format(invoice.createdAt!, "PPP")}</TableCell>
+                    <TableCell>
+                      ₹{invoice.totalAmount && invoice.totalAmount.toFixed(2)}
+                    </TableCell>
                     <TableCell>{invoice.status}</TableCell>
                   </TableRow>
                 ))}
@@ -208,7 +224,8 @@ const SeeAllInvoicesModal = () => {
           )}
         </div>
 
-        {filteredInvoices.length > 0 && (
+        {/* Pagination */}
+        {invoices.length > 0 && (
           <div className="flex items-center justify-between space-x-2 pt-4">
             <Button
               variant="outline"
@@ -220,15 +237,15 @@ const SeeAllInvoicesModal = () => {
               Previous
             </Button>
             <div className="text-sm text-muted-foreground">
-              Page {currentPage} of {pageCount}
+              Page {currentPage} of {totalPages}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, pageCount))
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === pageCount}
+              disabled={currentPage === totalPages}
             >
               Next
               <ChevronRight className="h-4 w-4 ml-2" />
