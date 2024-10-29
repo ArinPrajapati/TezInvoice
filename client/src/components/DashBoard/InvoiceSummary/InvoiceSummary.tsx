@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { use, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { PlusCircle, Receipt } from "lucide-react";
+import { InvoiceService } from "@/axios/service/invoiceService";
+import { format } from "date-fns";
 
 // Mock data for recent invoices
 // const recentInvoices = [
@@ -73,6 +76,17 @@ const EmptyState = () => (
 );
 
 const InvoiceSummary = () => {
+  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
+  useEffect(() => {
+    // Fetch recent invoices
+    const fetchRecentInvoices = async () => {
+      const response = await InvoiceService.getAllInvoices({
+        clientName: "",
+      });
+      setRecentInvoices(response.data);
+    };
+    fetchRecentInvoices();
+  }, []);
   const hasInvoices = recentInvoices.length > 0;
 
   return (
@@ -107,12 +121,14 @@ const InvoiceSummary = () => {
             </TableHeader>
             <TableBody>
               {recentInvoices.map((invoice) => (
-                <TableRow key={invoice.id} className="hover:bg-purple-50">
+                <TableRow key={invoice._id} className="hover:bg-purple-50">
                   <TableCell className="font-medium text-purple-900">
-                    {invoice.id}
+                    {invoice.invoiceNumber}
                   </TableCell>
-                  <TableCell>{invoice.clientName}</TableCell>
-                  <TableCell>{invoice.dueDate}</TableCell>
+                  <TableCell>{invoice?.clientInfo?.name}</TableCell>
+                  <TableCell>
+                    {format(invoice.dueDate, "MMM dd, yyyy")}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -128,10 +144,10 @@ const InvoiceSummary = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    ${invoice.amount.toFixed(2)}
+                    ₹{invoice?.totalAmount?.toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/invoice/${invoice.id}`}>
+                    <Link href={`/invoice/${invoice._id}`}>
                       <Button
                         variant={
                           invoice.status === "Paid" ? "outline" : "default"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +22,7 @@ import Link from "next/link";
 import { Invoice } from "@/types/invoice";
 
 const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
+  console.log(invoiceData);
   return (
     <div className="container mx-auto p-6">
       <Link href={"/dashboard"}>
@@ -34,10 +35,13 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl">
-                Invoice {invoiceData?._id}
+                {invoiceData?.invoiceNumber}
               </CardTitle>
               <CardDescription>
-                Issued on {invoiceData?.createdAt?.toLocaleDateString()}
+                Issued on{" "}
+                {invoiceData?.createdAt
+                  ? new Date(invoiceData.createdAt).toLocaleDateString()
+                  : "N/A"}
               </CardDescription>
             </div>
             <Badge
@@ -57,7 +61,11 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
             </div>
             <div className="text-right">
               <h3 className="font-semibold mb-1">Due Date:</h3>
-              <p>{invoiceData?.dueDate?.toLocaleDateString()}</p>
+              <p>
+                {invoiceData?.dueDate
+                  ? new Date(invoiceData.dueDate).toLocaleDateString()
+                  : "N/A"}
+              </p>
             </div>
           </div>
           <Table>
@@ -70,7 +78,7 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoiceData.items.map((item, index) => (
+              {invoiceData?.items?.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>{item.description}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>

@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ArrowLeft, CalendarIcon, Plus, Trash2, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, sub } from "date-fns";
 import { InvoiceService } from "@/axios/service/invoiceService";
 import { ClientService } from "@/axios/service/clientService";
 import { useToast } from "@/hooks/use-toast";
@@ -29,16 +29,22 @@ import { useRouter } from "next/navigation";
 interface InvoiceItem {
   description: string;
   quantity: number;
-  unitPrice: number;
+  price: number;
+  subtotal: number;
 }
 
 interface Client {
-  id: string;
+  _id: string;
   name: string;
+  email: string;
+  address?: string;
 }
 
 interface CreateInvoiceData {
-  clientId: string;
+  clientInfo: {
+    name: string;
+    email: string;
+  };
   invoiceNumber: string;
   jobDescription: string;
   items: InvoiceItem[];
@@ -55,12 +61,13 @@ const CreateInvoice = () => {
 
   // Form states
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: "", quantity: 1, unitPrice: 0 },
+    { description: "", quantity: 1, price: 0, subtotal: 0 },
   ]);
   const [invoiceDate, setInvoiceDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date>(new Date());
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
+
   const [invoiceNumber, setInvoiceNumber] = useState(
     `INV-${nanoid(6).toUpperCase()}`
   );
@@ -72,7 +79,34 @@ const CreateInvoice = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [clientsError, setClientsError] = useState<string>("");
 
+  useEffect(() => {
+    if (selectedClient) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.client;
+        return newErrors;
+      });
+    }
+  }, [selectedClient]);
+
+  const handleClientChange = (value: string) => {
+    const filteredClient = clients.find((client) => client._id === value);
+    setSelectedClient({
+      _id: filteredClient?._id || "",
+      name: filteredClient?.name || "",
+      email: filteredClient?.email || "",
+    });
+    // Clear the client error when a selection is made
+    if (value) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.client;
+        return newErrors;
+      });
+    }
+  };
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -115,7 +149,7 @@ const CreateInvoice = () => {
         if (item.quantity <= 0) {
           errors[`item-${index}-quantity`] = "Quantity must be greater than 0";
         }
-        if (item.unitPrice <= 0) {
+        if (item.price <= 0) {
           errors[`item-${index}-price`] = "Price must be greater than 0";
         }
       });
@@ -126,7 +160,10 @@ const CreateInvoice = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { description: "", quantity: 1, unitPrice: 0 }]);
+    setItems([
+      ...items,
+      { description: "", quantity: 1, price: 0, subtotal: 0 },
+    ]);
   };
 
   const removeItem = (index: number) => {
@@ -144,15 +181,13 @@ const CreateInvoice = () => {
     newItems[index] = {
       ...newItems[index],
       [field]: field === "description" ? value : Number(value),
+      subtotal: newItems[index].quantity * newItems[index].price,
     };
     setItems(newItems);
   };
 
   const calculateTotal = () => {
-    return items.reduce(
-      (total, item) => total + item.quantity * item.unitPrice,
-      0
-    );
+    return items.reduce((total, item) => total + item.subtotal, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,10 +203,16 @@ const CreateInvoice = () => {
     }
 
     const invoiceData: CreateInvoiceData = {
-      clientId: selectedClient,
+      clientInfo: {
+        name: selectedClient.name,
+        email: selectedClient.email,
+      },
       invoiceNumber,
       jobDescription,
-      items,
+      items: items.map((item) => ({
+        ...item,
+        subtotal: item.quantity * item.price,
+      })),
       createdAt: invoiceDate,
       dueDate,
       notes,
@@ -181,14 +222,15 @@ const CreateInvoice = () => {
 
     try {
       setIsSubmitting(true);
-      await InvoiceService.createInvoice(invoiceData);
+      // await InvoiceService.createInvoice(invoiceData);
+      console.log(invoiceData)
 
       toast({
         title: "Success",
         description: "Invoice created successfully!",
       });
 
-      router.push("/invoices"); // Redirect to invoices list
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error creating invoice:", error);
       toast({
@@ -203,7 +245,6 @@ const CreateInvoice = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      {/* Header with Back Button */}
       <div className="flex items-center mb-6 space-x-4">
         <Button
           variant="ghost"
@@ -221,29 +262,38 @@ const CreateInvoice = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label htmlFor="client">Client</Label>
+            <Label htmlFor="client">Client *</Label>
             <Select
-              value={selectedClient}
-              onValueChange={setSelectedClient}
+              value={selectedClient?._id || ""}
+              onValueChange={handleClientChange}
               disabled={isLoading}
             >
               <SelectTrigger
                 id="client"
-                className={formErrors.client ? "border-red-500" : ""}
+                className={`${
+                  formErrors.client || clientsError ? "border-red-500" : ""
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <SelectValue placeholder="Select a client" />
               </SelectTrigger>
               <SelectContent>
                 {isLoading ? (
                   <SelectItem value=" ">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading...
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading clients...</span>
+                    </div>
                   </SelectItem>
+                ) : clientsError ? (
+                  <SelectItem value=" ">
+                    <span className="text-red-500">{clientsError}</span>
+                  </SelectItem>
+                ) : clients.length === 0 ? (
+                  <SelectItem value=" ">No clients available</SelectItem>
                 ) : (
-                  clients &&
-                  clients?.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client?.name}
+                  clients.map((client) => (
+                    <SelectItem key={client._id} value={client._id}>
+                      {client.name}
                     </SelectItem>
                   ))
                 )}
@@ -251,6 +301,9 @@ const CreateInvoice = () => {
             </Select>
             {formErrors.client && (
               <p className="text-sm text-red-500 mt-1">{formErrors.client}</p>
+            )}
+            {clientsError && (
+              <p className="text-sm text-red-500 mt-1">{clientsError}</p>
             )}
           </div>
           <div>
@@ -331,9 +384,9 @@ const CreateInvoice = () => {
                 <Input
                   type="number"
                   placeholder="Price"
-                  value={item.unitPrice}
+                  value={item.price}
                   onChange={(e) =>
-                    updateItem(index, "unitPrice", e.target.value)
+                    updateItem(index, "price", e.target.value)
                   }
                   className={
                     formErrors[`item-${index}-price`] ? "border-red-500" : ""
@@ -348,7 +401,10 @@ const CreateInvoice = () => {
               <div className="w-24">
                 <Input
                   readOnly
-                  value={(item.quantity * item.unitPrice).toFixed(2)}
+                  value={item.subtotal.toFixed(2)}
+                  onChange={(e) =>
+                    updateItem(index, "subtotal", e.target.value)
+                  }
                 />
               </div>
               <Button
@@ -443,8 +499,8 @@ const CreateInvoice = () => {
               <SelectValue placeholder="Select payment method" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="stripe">Razor Pay</SelectItem>
-              <SelectItem value="banktransfer">Offline</SelectItem>
+              <SelectItem value="online">Razor Pay</SelectItem>
+              <SelectItem value="offline">Offline</SelectItem>
             </SelectContent>
           </Select>
           {formErrors.paymentMethod && (

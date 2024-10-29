@@ -1,7 +1,9 @@
 "use client";
+import { InvoiceService } from "@/axios/service/invoiceService";
 import SeeInvoicePage from "@/components/DashBoard/InvoiceSummary/SeeInvoicePage";
+import { Invoice } from "@/types/invoice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const page = () => {
   const id = usePathname().split("/")[2];
@@ -11,32 +13,14 @@ const page = () => {
     }
     /// Fetch invoice data from API
   }, []);
-  const invoiceData = {
-    id: id,
-    client: "Acme Corp",
-    date: new Date(2023, 6, 15),
-    dueDate: new Date(2023, 7, 15),
-    status: "Unpaid",
-    items: [
-      {
-        description: "Web Development",
-        quantity: 1,
-        unitPrice: 1000,
-        total: 1000,
-      },
-      { description: "UI/UX Design", quantity: 2, unitPrice: 500, total: 1000 },
-      {
-        description: "Content Creation",
-        quantity: 5,
-        unitPrice: 100,
-        total: 500,
-      },
-    ],
-    subtotal: 2500,
-    tax: 250,
-    total: 2750,
-  };
-
+  const [invoiceData, setInvoiceData] = useState<Invoice>({} as Invoice);
+  useEffect(() => {
+    const fetchInvoice = async () => {
+      const response = await InvoiceService.getInvoiceById(id);
+      setInvoiceData(response.data);
+    };
+    fetchInvoice();
+  }, [id]);
   return <SeeInvoicePage invoiceData={invoiceData} />;
 };
 export default page;
