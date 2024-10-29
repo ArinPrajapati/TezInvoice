@@ -256,32 +256,39 @@ export const getAllInvoices = async (req: Request, res: Response) => {
     const limitNum = parseInt(limit as string, 10);
     const skip = (parseInt(page as string, 10) - 1) * limitNum;
 
+    // Construct the query object
     const query: any = { userId: id };
 
-    if (clientName && clientName !== "") {
-      query["clientInfo"] = {};
-      if (clientName) {
-        query["clientInfo"].name = { $regex: clientName, $options: "i" };
-      }
+    if (clientName) {
+      query["clientInfo.name"] = { $regex: clientName, $options: "i" };
     }
 
-    if (search && search !== "") {
+    if (search) {
       query.$or = [
         { invoiceNumber: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ];
     }
 
-    if (date && date !== "" && date !== "undefined") {
-      query.createdAt = { $gte: new Date(date as string) };
+    if (date && date !== "undefined") {
+      const formattedDate = new Date(date as string);
+      if (!isNaN(formattedDate.getTime())) {
+        query.createdAt = { $gte: formattedDate };
+      } else {
+        console.error("Invalid date format:", date);
+        res.status(400).json({ message: "Invalid date format" });
+        return;
+      }
     }
 
-    if (status && status !== "") {
+    if (status) {
       query.status = status;
     }
 
-    const invoicesList = await invoices.find(query).skip(skip).limit(limitNum);
+    // Log the query for debugging
+    console.log("Query:", query);
 
+    const invoicesList = await invoices.find(query).skip(skip).limit(limitNum);
     const totalInvoices = await invoices.countDocuments(query);
 
     res.status(200).json({
@@ -297,3 +304,5 @@ export const getAllInvoices = async (req: Request, res: Response) => {
     return;
   }
 };
+
+
