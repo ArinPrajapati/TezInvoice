@@ -4,7 +4,7 @@ import ExchangeRate from "../models/exchangeRates";
 export const updateExchangeRates = async () => {
     try {
         const response = await axios.get('https://v6.exchangerate-api.com/v6/f6cfdff34545486ea14402ed/latest/USD');
-        console.log(response.data); // Log the response to inspect the structure
+        console.log(response.data);
         const rates = response.data?.conversion_rates;
 
         if (!rates) {
