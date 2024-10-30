@@ -25,6 +25,7 @@ const useStore = create<Store>()((set) => ({
     password: "",
     isVerified: false,
     accountLevel: "",
+    invoicesLimit: 0,
   },
   setPublicRoute: (publicRoute: boolean) =>
     set((state) => ({ ...state, publicRoute })),

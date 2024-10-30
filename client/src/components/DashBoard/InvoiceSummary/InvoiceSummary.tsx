@@ -15,47 +15,6 @@ import { PlusCircle, Receipt } from "lucide-react";
 import { InvoiceService } from "@/axios/service/invoiceService";
 import { format } from "date-fns";
 
-// Mock data for recent invoices
-// const recentInvoices = [
-//   {
-//     id: "INV001",
-//     clientName: "Acme Corp",
-//     dueDate: "2023-07-15",
-//     status: "Unpaid",
-//     amount: 1500.0,
-//   },
-//   {
-//     id: "INV002",
-//     clientName: "Globex Inc",
-//     dueDate: "2023-07-10",
-//     status: "Paid",
-//     amount: 2750.5,
-//   },
-//   {
-//     id: "INV003",
-//     clientName: "Initech",
-//     dueDate: "2023-07-20",
-//     status: "Unpaid",
-//     amount: 900.0,
-//   },
-//   {
-//     id: "INV004",
-//     clientName: "Hooli",
-//     dueDate: "2023-07-05",
-//     status: "Paid",
-//     amount: 3200.75,
-//   },
-//   {
-//     id: "INV005",
-//     clientName: "Pied Piper",
-//     dueDate: "2023-07-25",
-//     status: "Unpaid",
-//     amount: 1800.25,
-//   },
-// ];
-
-const recentInvoices: any[] = [];
-
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-12 bg-white rounded-b-lg">
     <Receipt className="h-16 w-16 text-purple-200 mb-4" />
@@ -94,7 +53,7 @@ const InvoiceSummary = () => {
       <div className="flex items-center justify-between bg-purple-200 p-4 rounded-t-lg">
         <h2 className="text-2xl font-bold text-purple-700">Recent Invoices</h2>
         {hasInvoices && (
-          <Link href="/invoice/new">
+          <Link href="/create/invoice">
             <Button className="bg-purple-600 text-white hover:bg-purple-700">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Invoice

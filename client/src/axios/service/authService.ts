@@ -9,6 +9,7 @@ interface User {
   password: string;
   isVerified: boolean;
   accountLevel: string;
+  invoicesLimit: number;
 }
 
 interface LoginResponse {

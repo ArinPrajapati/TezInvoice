@@ -20,9 +20,19 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Send } from "lucide-react";
 import Link from "next/link";
 import { Invoice } from "@/types/invoice";
+import { toast } from "@/hooks/use-toast";
+import { InvoiceService } from "@/axios/service/invoiceService";
 
 const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
   console.log(invoiceData);
+  const handleSendInvoice = async ({ id }: { id: string }) => {
+    await InvoiceService.sendInvoice(id);
+    toast({
+      title: "Invoice Sent",
+      description: `Invoice ${id} has been sent successfully`,
+      className: "",
+    });
+  };
   return (
     <div className="container mx-auto p-6">
       <Link href={"/dashboard"}>
@@ -102,7 +112,12 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" /> Download PDF
           </Button>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Button
+            onClick={() =>
+              invoiceData._id && handleSendInvoice({ id: invoiceData._id })
+            }
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
             <Send className="mr-2 h-4 w-4" /> Send Invoice
           </Button>
         </CardFooter>
