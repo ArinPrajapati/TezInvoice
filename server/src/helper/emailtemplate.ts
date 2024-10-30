@@ -37,10 +37,9 @@ const verifyEmailTemplate = (link: string) => {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verify Email</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
+   <style>
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+      </style>
   </head>
   <body class="bg-gray-100 text-gray-800">
     <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
@@ -78,28 +77,56 @@ const invoiceTemplate = (
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice #${invoiceNumber}</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
+    <title>Invoice Template</title>
+   <style>
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+      </style>
   </head>
-  <body class="bg-gray-100 text-gray-800">
-    <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">
-        Invoice for ${JobDescription}
-      </h2>
+  <body class="bg-purple-50 min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-2xl w-full mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+      <!-- Header -->
+      <div class="bg-purple-600 p-6">
+        <h1 class="text-3xl font-bold text-white text-center">INVOICE</h1>
+        <p class="text-purple-200 text-center mt-2">#INV-2024-001</p>
+      </div>
       
-      <p class="text-gray-600 mb-4">
-        Hello, please find your invoice attached below. The total amount due is <strong>$${amountDue}</strong>.
-      </p>
-      <p class="text-gray-600 mb-4">
-        The payment is due by <strong>${dueDate}</strong>. You can view or download your invoice in attachment.
-      </p>
-      
-      <p class="text-gray-500 text-sm mt-6 text-center">
-        If you have any questions, feel free to contact us. Thank you for your business!
-      </p>
+      <!-- Content -->
+      <div class="p-8">
+        <!-- Job Description -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-semibold text-purple-800 mb-4">Web Development Project</h2>
+          <div class="h-1 w-20 bg-purple-500 rounded"></div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="grid grid-cols-2 gap-8 mb-8">
+          <div>
+            <h3 class="text-sm font-medium text-purple-600 uppercase mb-2">Due Date</h3>
+            <p class="text-gray-800">May 15, 2024</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium text-purple-600 uppercase mb-2">Amount Due</h3>
+            <p class="text-2xl font-bold text-gray-800">$2,500.00</p>
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="bg-purple-50 rounded-lg p-6 mb-8">
+          <p class="text-gray-700 leading-relaxed">
+            Thank you for choosing our services. Please find your invoice details above. Payment is due by the specified date.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-purple-100 pt-6">
+          <div class="text-center">
+            <p class="text-sm text-gray-600 mb-2">
+              Questions? We're here to help.
+            </p>
+            <p class="text-purple-600 font-medium">support@company.com</p>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
