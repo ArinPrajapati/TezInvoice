@@ -15,6 +15,11 @@ const ClientSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
     },
+    currency: {
+      type: String,
+      default: "USD",
+      required: true
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

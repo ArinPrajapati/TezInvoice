@@ -5,12 +5,12 @@ import jwt from "jsonwebtoken";
 
 export const createClient = async (req: Request, res: Response) => {
   try {
-    const { userId, name, email, phone } = req.body;
-    if (!userId || !name || !email || !phone) {
+    const { userId, name, email, phone, currency } = req.body;
+    if (!userId || !name || !email || !phone || !currency) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
     }
-    const newClient = new Client({ userId, name, email, phoneNumber: phone });
+    const newClient = new Client({ userId, name, email, phoneNumber: phone, currency });
     await newClient.save();
     res.status(201).json(newClient);
   } catch (error) {

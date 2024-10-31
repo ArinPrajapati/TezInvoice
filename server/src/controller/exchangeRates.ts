@@ -24,6 +24,7 @@ export const updateExchangeRates = async () => {
 
         await Promise.all(updatePromises);
         console.log('Exchange rates updated successfully.');
+        return;
     } catch (error) {
         console.error('Error updating exchange rates:', error);
     }

@@ -5,6 +5,7 @@ import { _500 } from "../helper/error";
 import jwt from "jsonwebtoken";
 import sendEmail from "../config/nodeMailler";
 import Cryptr from "cryptr";
+import ExchangeRate from "../models/exchangeRates";
 import {
   magicLinkTemplate,
   verifyEmailTemplate,

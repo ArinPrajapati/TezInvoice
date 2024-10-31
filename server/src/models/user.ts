@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
       default: "Free",
       required: true,
     },
+    currency: {
+      type: String,
+      default: "USD",
+      required: true,
+    },
     invoicesLimit: {
       type: Number,
       default: 5,

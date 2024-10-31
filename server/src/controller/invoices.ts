@@ -10,6 +10,7 @@ import InvoiceHelper from "../helper/invoiceTemplates";
 import path from "path";
 import { invoiceTemplate } from "../helper/emailtemplate";
 import { formatDate } from "date-fns";
+import ExchangeRate from "../models/exchangeRates";
 
 export const createInvoice = async (req: Request, res: Response) => {
   try {
@@ -23,17 +24,10 @@ export const createInvoice = async (req: Request, res: Response) => {
       invoiceNumber,
       paymentMethod,
       createdAt,
+      currency,
     } = req.body as Invoice;
 
-    if (
-
-      !jobDescription ||
-      !items ||
-      !totalAmount ||
-      !dueDate ||
-      !invoiceNumber ||
-      !paymentMethod
-    ) {
+    if (!jobDescription || !items || !totalAmount || !dueDate || !invoiceNumber || !paymentMethod || !currency) {
       res.status(400).json({ message: "Please fill all the fields" });
       return;
     }
@@ -49,14 +43,33 @@ export const createInvoice = async (req: Request, res: Response) => {
       return;
     }
 
+    const exchangeRate = await ExchangeRate.findById(currency);
+    if (!exchangeRate) {
+      res.status(400).json({ message: "Currency exchange rate not found" });
+      return;
+    }
+
+    const normalizedItems = items.map(item => {
+      const normalizedPrice = (item.price ?? 0) * exchangeRate.rate;
+      const normalizedSubtotal = normalizedPrice * item.quantity;
+      return {
+        ...item,
+        price: normalizedPrice,
+        subtotal: normalizedSubtotal,
+      };
+    });
+
+    const normalizedTotalAmount = normalizedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
     const invoice = await invoices.create({
       serviceName: user.serviceName,
       ownerName: user.name,
-      jobDescription: jobDescription,
+      jobDescription,
       ownerEmail: user.email,
       clientInfo,
-      items,
-      totalAmount,
+      items: normalizedItems,
+      totalAmount: normalizedTotalAmount,
+      currency,
       dueDate,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
       userId: user._id,
@@ -67,63 +80,86 @@ export const createInvoice = async (req: Request, res: Response) => {
     });
 
     if (!invoice) {
-      _500("Failed to create invoice", "The Problem is in db", res);
+      res.status(500).json({ message: "Failed to create invoice", error: "The problem is in the database" });
       return;
     }
 
-    res.status(200).json({ message: "Invoice Created" });
+    res.status(200).json({ message: "Invoice Created", invoice });
     return;
   } catch (error) {
-    _500("Create Invoice Failed", (error as Error).message, res);
+    res.status(500).json({ message: "Create Invoice Failed", error: (error as Error).message });
     return;
   }
 };
 
 export const sendInvoice = async (req: Request, res: Response) => {
   try {
-    // TODO: Add Payment Gateway Integration here to get the payment link
     const { id } = req.data as jwt.JwtPayload;
     const { invoiceId } = req.params;
+
+    // Find the invoice in the database
     const invoice = await invoices.findOne({ _id: invoiceId });
     if (!invoice) {
       res.status(404).json({ message: "Invoice Not Found" });
       return;
     }
-    if (invoice && invoice.userId && invoice?.userId.toString() !== id) {
+    if (invoice.userId?.toString() !== id) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
-    const invoiceHelper = new InvoiceHelper(invoice as unknown as Invoice);
+    const exchangeRate = await ExchangeRate.findById(invoice.clientInfo?.currency);
+    if (!exchangeRate) {
+      res.status(400).json({ message: "Currency exchange rate not found" });
+      return;
+    }
+
+    const normalizedItems = invoice.items.map(item => {
+      const normalizedPrice = item?.price! * exchangeRate.rate;
+      const normalizedSubtotal = normalizedPrice * item.quantity!;
+      return {
+        ...item,
+        price: normalizedPrice,
+        subtotal: normalizedSubtotal,
+      };
+    });
+
+    const normalizedTotalAmount = normalizedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+    const invoiceHelper = new InvoiceHelper({
+      ...invoice,
+      items: normalizedItems,
+      totalAmount: normalizedTotalAmount,
+    } as unknown as Invoice);
 
     await invoiceHelper.getCombination(1, 1, 1, 1);
     const fileName = invoiceHelper.invoiceMaker.fileName;
-
     if (!fileName) {
       res.status(404).json({ message: "Invoice Not Found" });
       return;
     }
     const filePath = path.join("./public/pdf", fileName);
 
-    console.log("filePath", filePath);
+    // Verify that the PDF file was created
     if (!fs.existsSync(filePath)) {
       res.status(404).json({ message: "Invoice file not found" });
       return;
     }
 
+    // Convert PDF to base64
     const pdfContent = fs.readFileSync(filePath, { encoding: "base64" });
-    console.log("pdfContent", pdfContent);
 
+    // Send email with the recalculated invoice
     await sendEmail({
       from: "hello@demomailtrap.com",
-      to: "arinprajapati78@gmail.com",
+      to: invoice?.clientInfo?.email!,
       subject: "Invoice",
       text: "Invoice",
       html: invoiceTemplate(
-        invoice._id as unknown as string,
-        invoice.jobDescription as string,
-        formatDate(invoice.dueDate?.toISOString() as string, "yyyy-MM-dd"),
-        invoice.totalAmount as unknown as string
+        invoice._id.toString(),
+        invoice?.jobDescription!,
+        formatDate(invoice.dueDate ? invoice.dueDate.toISOString() : "", "yyyy-MM-dd"),
+        normalizedTotalAmount.toFixed(2)
       ),
       attachments: [
         {
@@ -135,12 +171,12 @@ export const sendInvoice = async (req: Request, res: Response) => {
       ],
     });
 
+    // Clean up the PDF file
     fs.unlinkSync(filePath);
+
     res.status(200).json({ message: "Invoice Sent" });
-    return;
   } catch (error) {
-    _500("Send Invoice Failed", (error as Error).message, res);
-    return;
+    res.status(500).json({ message: "Send Invoice Failed", error: (error as Error).message });
   }
 };
 

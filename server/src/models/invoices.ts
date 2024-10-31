@@ -8,6 +8,7 @@ const invoiceSchema = new mongoose.Schema({
   clientInfo: {
     name: String,
     email: String,
+    currency: String,
   },
   items: [
     {
@@ -21,6 +22,7 @@ const invoiceSchema = new mongoose.Schema({
   jobDescription: String,
   totalAmount: Number,
   dueDate: Date,
+  currency: { type: String, default: "USD" },
   paymentMethod: { type: String, enum: ["offline", "online"] },
   isSent: { type: Boolean, default: false },
   status: { type: String, enum: ["unpaid", "paid"], default: "unpaid" },

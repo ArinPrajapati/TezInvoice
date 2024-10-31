@@ -27,10 +27,12 @@ export interface Invoice {
   serviceName: String;
   ownerName: String;
   ownerEmail: String;
+  currency: string;
   clientInfo: {
     name: string;
     email: string;
     address: string;
+    currency: string;
   };
   items: {
     description: string;
