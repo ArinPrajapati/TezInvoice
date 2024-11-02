@@ -40,6 +40,13 @@ export interface Invoice {
     price: number;
     subtotal: number;
   }[];
+  clientItems: {
+    description: string;
+    quantity: number;
+    price: number;
+    subtotal: number;
+  }[];
+  client_total: number; 
   jobDescription: string;
   totalAmount: number;
   dueDate: Date;

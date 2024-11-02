@@ -18,6 +18,15 @@ const invoiceSchema = new mongoose.Schema({
       subtotal: Number,
     },
   ],
+  clientItems: [
+    {
+      description: String,
+      quantity: Number,
+      price: Number,
+      subtotal: Number,
+    },
+  ],
+  client_total: Number,
   ownerEmail: String,
   jobDescription: String,
   totalAmount: Number,

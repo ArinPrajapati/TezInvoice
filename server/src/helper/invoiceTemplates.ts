@@ -1,6 +1,7 @@
 import PdfPrinter from "pdfmake";
 import fs from "fs";
 import { Invoice } from "../types";
+import { getCurrencySymbol } from "./moneySymbols";
 
 const fonts = {
   Roboto: {
@@ -16,10 +17,12 @@ const printer = new PdfPrinter(fonts);
 class InvoiceMaker {
   invoice: Invoice;
   fileName: string;
+  currencySymbol: string;
 
   constructor(invoice: Invoice) {
     this.invoice = invoice;
     this.fileName = `invoice-${invoice._id}.pdf`;
+    this.currencySymbol = getCurrencySymbol(invoice.clientInfo.currency);
   }
 
   headerType1() {
@@ -93,8 +96,8 @@ class InvoiceMaker {
           ...this.invoice.items.map((item) => [
             item.description,
             { text: item.quantity, alignment: "center" },
-            { text: `$${item.price.toFixed(2)}`, alignment: "right" },
-            { text: `$${item.subtotal.toFixed(2)}`, alignment: "right" },
+            { text: `${getCurrencySymbol(this.invoice.clientInfo.currency)}${item.price.toFixed(2)}`, alignment: "right" },
+            { text: `${getCurrencySymbol(this.invoice.clientInfo.currency)}${item.subtotal.toFixed(2)}`, alignment: "right" },
           ]),
           [
             {
@@ -106,7 +109,7 @@ class InvoiceMaker {
             {},
             {},
             {
-              text: `$${this.invoice.totalAmount.toFixed(2)}`,
+              text: `${this.currencySymbol}${this.invoice.totalAmount.toFixed(2)}`,
               alignment: "right",
               bold: true,
             },
@@ -132,9 +135,24 @@ class InvoiceMaker {
           ...this.invoice.items.map((item) => [
             item.description,
             { text: item.quantity, alignment: "center" },
-            { text: `$${item.price.toFixed(2)}`, alignment: "right" },
-            { text: `$${item.subtotal.toFixed(2)}`, alignment: "right" },
+            { text: `${this.currencySymbol}${item.price.toFixed(2)}`, alignment: "right" },
+            { text: `${this.currencySymbol}${item.subtotal.toFixed(2)}`, alignment: "right" },
           ]),
+          [
+            {
+              text: "Total Amount",
+              colSpan: 3,
+              alignment: "right",
+              bold: true,
+            },
+            {},
+            {},
+            {
+              text: `${this.currencySymbol}${this.invoice.totalAmount.toFixed(2)}`,
+              alignment: "right",
+              bold: true,
+            },
+          ],
         ],
       },
       layout: {
@@ -159,15 +177,28 @@ class InvoiceMaker {
           ...this.invoice.items.map((item, index) => [
             { text: index + 1, alignment: "center" },
             item.description,
-            { text: `$${item.price.toFixed(2)}`, alignment: "right" },
-            { text: `$${item.subtotal.toFixed(2)}`, alignment: "right" },
+            { text: `${this.currencySymbol}${item.price.toFixed(2)}`, alignment: "right" },
+            { text: `${this.currencySymbol}${item.subtotal.toFixed(2)}`, alignment: "right" },
           ]),
+          [
+            { text: "", alignment: "center" },
+            {
+              text: "Total Amount",
+              alignment: "right",
+              bold: true,
+            },
+            { text: "", alignment: "right" },
+            {
+              text: `${this.currencySymbol}${this.invoice.totalAmount.toFixed(2)}`,
+              alignment: "right",
+              bold: true,
+            },
+          ],
         ],
       },
       layout: "noBorders",
     };
   }
-
   footerType1() {
     return {
       text: "Thank you for your business!",

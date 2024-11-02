@@ -1,7 +1,7 @@
 
 IMAGE_NAME=tez-server
 CONTAINER_NAME=tez-server
-DOCKER_PORT=3333
+DOCKER_PORT=4000
 
 all: stop clean rm build run
 
