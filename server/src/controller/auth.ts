@@ -48,6 +48,7 @@ const signup = async (req: Request, res: Response): Promise<void> => {
     }
 
     res.status(201).json(user);
+    return;
   } catch (error: unknown) {
     console.error(error);
     if (error instanceof Error) {
@@ -79,6 +80,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
       {
         id: getUser?._id,
       },
+
       process.env.JWT_SECRET as jwt.Secret,
       { expiresIn: "7d" }
     );
@@ -87,6 +89,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
       message: "Login Successfull",
       token: token,
     });
+    return
   } catch (error: any) {
     _500("Login Failed", error.message, res);
   }

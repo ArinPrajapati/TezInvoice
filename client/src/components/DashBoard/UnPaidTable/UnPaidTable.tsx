@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -24,6 +24,7 @@ import Link from "next/link";
 import { InvoiceService } from "@/axios/service/invoiceService";
 import { format, isBefore, isToday, differenceInDays } from "date-fns";
 import { Invoice } from "@/types/invoice";
+import { getCurrencySymbol } from "@/lib/moneySymbols";
 
 // Types for invoice status
 type InvoiceStatus = "overdue" | "due-today" | "unpaid";
@@ -119,7 +120,6 @@ const UnPaidTable: React.FC = () => {
         setError(null);
         const response = await InvoiceService.getUnpaidInvoices();
 
-        // Process invoices to add derived status
         const processedInvoices = response.data.map((invoice: Invoice) => {
           const { status, daysOverdue } = getInvoiceStatus(invoice.dueDate);
           return {
@@ -157,7 +157,6 @@ const UnPaidTable: React.FC = () => {
 
   const handleSendReminder = async (invoiceId: string) => {
     try {
-      // Add your reminder logic here
       console.log(`Sending reminder for invoice ₹{invoiceId}`);
     } catch (err) {
       console.error("Failed to send reminder:", err);
@@ -176,7 +175,7 @@ const UnPaidTable: React.FC = () => {
           Outstanding Payments
         </h2>
         <div className="flex items-center bg-white px-4 py-2 rounded-lg">
-          <IndianRupee   className="h-5 w-5 text-purple-600 mr-2" />
+          <IndianRupee className="h-5 w-5 text-purple-600 mr-2" />
           <span className="font-semibold text-purple-800">
             Total: {totalOutstanding}
           </span>
@@ -234,7 +233,8 @@ const UnPaidTable: React.FC = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  ₹{invoice.totalAmount?.toFixed(2) || "0.00"}
+                  {getCurrencySymbol(invoice?.currency)}
+                  {invoice.totalAmount?.toFixed(2) || "0.00"}
                 </TableCell>
                 <TableCell>
                   <div>

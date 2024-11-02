@@ -22,6 +22,7 @@ import Link from "next/link";
 import { Invoice } from "@/types/invoice";
 import { toast } from "@/hooks/use-toast";
 import { InvoiceService } from "@/axios/service/invoiceService";
+import { getCurrencySymbol } from "@/lib/moneySymbols";
 
 const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
   console.log(invoiceData);
@@ -93,10 +94,12 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
                   <TableCell>{item.description}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>
                   <TableCell className="text-right">
-                    ₹{item?.price?.toFixed(2)}
+                    {getCurrencySymbol(invoiceData.currency)}
+                    {item?.price?.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right">
-                    ₹{item.price * item.quantity}
+                    {getCurrencySymbol(invoiceData.currency)}
+                    {item.price * item.quantity}
                   </TableCell>
                 </TableRow>
               ))}
@@ -104,7 +107,8 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           </Table>
           <div className="mt-4 text-right">
             <p className="font-semibold text-lg">
-              Total: ₹{invoiceData?.totalAmount?.toFixed(2)}
+              Total: {getCurrencySymbol(invoiceData?.currency)}
+              {invoiceData?.totalAmount?.toFixed(2)}
             </p>
           </div>
         </CardContent>

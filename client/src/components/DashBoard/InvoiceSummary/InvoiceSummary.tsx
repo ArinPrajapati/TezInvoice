@@ -14,6 +14,8 @@ import Link from "next/link";
 import { PlusCircle, Receipt } from "lucide-react";
 import { InvoiceService } from "@/axios/service/invoiceService";
 import { format } from "date-fns";
+import { getCurrencySymbol } from "@/lib/moneySymbols";
+import { Invoice } from "@/types/invoice";
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-12 bg-white rounded-b-lg">
@@ -35,7 +37,7 @@ const EmptyState = () => (
 );
 
 const InvoiceSummary = () => {
-  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
+  const [recentInvoices, setRecentInvoices] = useState<Invoice[]>([]);
   useEffect(() => {
     // Fetch recent invoices
     const fetchRecentInvoices = async () => {
@@ -86,15 +88,17 @@ const InvoiceSummary = () => {
                   </TableCell>
                   <TableCell>{invoice?.clientInfo?.name}</TableCell>
                   <TableCell>
-                    {format(invoice.dueDate, "MMM dd, yyyy")}
+                    {invoice.dueDate
+                      ? format(new Date(invoice.dueDate), "MMM dd, yyyy")
+                      : "N/A"}
                   </TableCell>
                   <TableCell>
                     <Badge
                       variant={
-                        invoice.status === "Paid" ? "default" : "outline"
+                        invoice.status === "paid" ? "default" : "outline"
                       }
                       className={
-                        invoice.status === "Paid"
+                        invoice.status === "paid"
                           ? "bg-purple-200 text-purple-800 hover:bg-purple-300"
                           : "border-purple-500 text-purple-700"
                       }
@@ -103,22 +107,23 @@ const InvoiceSummary = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    ₹{invoice?.totalAmount?.toFixed(2)}
+                    {getCurrencySymbol(invoice?.currency)}
+                    {invoice?.totalAmount?.toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Link href={`/invoice/${invoice._id}`}>
                       <Button
                         variant={
-                          invoice.status === "Paid" ? "outline" : "default"
+                          invoice.status === "paid" ? "outline" : "default"
                         }
                         size="sm"
                         className={
-                          invoice.status === "Paid"
+                          invoice.status === "paid"
                             ? "border-purple-500 text-purple-700 hover:bg-purple-100"
                             : "bg-purple-600 text-white hover:bg-purple-700"
                         }
                       >
-                        {invoice.status === "Paid" ? "View" : "Edit"}
+                        {invoice.status === "paid" ? "View" : "Edit"}
                       </Button>
                     </Link>
                   </TableCell>

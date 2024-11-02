@@ -5,6 +5,7 @@ interface Client {
   email: string;
   address: string;
   phone: string;
+  currency: string;
   _id?: string;
   userId: string;
 }

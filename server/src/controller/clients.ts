@@ -13,6 +13,7 @@ export const createClient = async (req: Request, res: Response) => {
     const newClient = new Client({ userId, name, email, phoneNumber: phone, currency });
     await newClient.save();
     res.status(201).json(newClient);
+    return;
   } catch (error) {
     _500("Failed to create client", "The Problem is in db", res);
   }
@@ -41,3 +42,4 @@ export const deleteClient = async (req: Request, res: Response) => {
     _500("Failed to delete client", "The Problem is in db", res);
   }
 };
+

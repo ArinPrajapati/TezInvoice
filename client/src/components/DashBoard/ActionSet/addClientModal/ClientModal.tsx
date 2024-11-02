@@ -1,9 +1,15 @@
 "use client";
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ClientService } from "@/axios/service/clientService";
 import useStore from "@/store/store";
 import {
@@ -16,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
+import { currencySymbols } from "@/types/currencyTypes";
 
 const AddClientModal = () => {
   const { loginData } = useStore();
@@ -24,23 +31,25 @@ const AddClientModal = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [currency, setCurrency] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
     await ClientService.createClient({
       name: clientName,
       email,
       phone,
       address,
+      currency,
       userId: loginData?._id,
     });
-    console.log({ clientName, email, phone, address });
+    console.log({ clientName, email, phone, address, currency });
     setOpen(false);
     setClientName("");
     setEmail("");
     setPhone("");
     setAddress("");
+    setCurrency("");
   };
 
   return (
@@ -109,6 +118,23 @@ const AddClientModal = () => {
                 onChange={(e) => setAddress(e.target.value)}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currency" className="text-right">
+                Currency
+              </Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(currencySymbols).map(([code, symbol]) => (
+                    <SelectItem key={code} value={code}>
+                      {code} ({symbol})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

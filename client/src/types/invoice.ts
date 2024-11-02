@@ -19,6 +19,7 @@ export interface Invoice {
   jobDescription?: string;
   totalAmount?: number;
   dueDate?: Date;
+  currency: string;
   status?: "unpaid" | "paid";
   paymentLink?: string;
   createdAt?: Date;

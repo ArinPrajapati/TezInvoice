@@ -20,11 +20,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ArrowLeft, CalendarIcon, Plus, Trash2, Loader2 } from "lucide-react";
-import { format, sub } from "date-fns";
+import { format } from "date-fns";
 import { InvoiceService } from "@/axios/service/invoiceService";
 import { ClientService } from "@/axios/service/clientService";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { currencySymbols, getCurrencySymbol } from "@/lib/moneySymbols";
 
 interface InvoiceItem {
   description: string;
@@ -52,6 +53,8 @@ interface CreateInvoiceData {
   dueDate: Date;
   notes: string;
   paymentMethod: string;
+  paymentLink?: string;
+  currency: string;
   totalAmount: number;
 }
 
@@ -66,6 +69,8 @@ const CreateInvoice = () => {
   const [dueDate, setDueDate] = useState<Date>(new Date());
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
+  const [currency, setCurrency] = useState("INR");
+  const [paymentLink, setPaymentLink] = useState("");
 
   const [invoiceNumber, setInvoiceNumber] = useState(
     `INV-${nanoid(6).toUpperCase()}`
@@ -135,6 +140,10 @@ const CreateInvoice = () => {
     if (!jobDescription.trim())
       errors.jobDescription = "Job description is required";
     if (!paymentMethod) errors.paymentMethod = "Please select a payment method";
+    if (!currency) errors.currency = "Please select a currency";
+    if (paymentMethod === "online" && !paymentLink.trim()) {
+      errors.paymentLink = "Payment link is required for online payments";
+    }
 
     if (items.length === 0) {
       errors.items = "At least one item is required";
@@ -155,7 +164,6 @@ const CreateInvoice = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
   const addItem = () => {
     setItems([
       ...items,
@@ -229,6 +237,8 @@ const CreateInvoice = () => {
       dueDate,
       notes,
       paymentMethod,
+      paymentLink: paymentMethod === "online" ? paymentLink : undefined,
+      currency,
       totalAmount: calculateTotal(),
     };
 
@@ -253,6 +263,7 @@ const CreateInvoice = () => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="flex items-center mb-6 space-x-4">
@@ -330,6 +341,30 @@ const CreateInvoice = () => {
               <p className="text-sm text-red-500 mt-1">
                 {formErrors.invoiceNumber}
               </p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="currency">Currency *</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger
+                id="currency"
+                className={formErrors.currency ? "border-red-500" : ""}
+              >
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(currencySymbols).map(([code, symbol]) => (
+                  <SelectItem key={code} value={code}>
+                    {code} ({symbol})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {formErrors.currency && (
+              <p className="text-sm text-red-500 mt-1">{formErrors.currency}</p>
             )}
           </div>
         </div>
@@ -499,30 +534,51 @@ const CreateInvoice = () => {
           />
         </div>
 
-        <div>
-          <Label htmlFor="paymentMethod">Payment Method</Label>
-          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-            <SelectTrigger
-              id="paymentMethod"
-              className={formErrors.paymentMethod ? "border-red-500" : ""}
-            >
-              <SelectValue placeholder="Select payment method" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="online">Razor Pay</SelectItem>
-              <SelectItem value="offline">Offline</SelectItem>
-            </SelectContent>
-          </Select>
-          {formErrors.paymentMethod && (
-            <p className="text-sm text-red-500 mt-1">
-              {formErrors.paymentMethod}
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="paymentMethod">Payment Method *</Label>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger
+                id="paymentMethod"
+                className={formErrors.paymentMethod ? "border-red-500" : ""}
+              >
+                <SelectValue placeholder="Select payment method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="online">Razor Pay</SelectItem>
+                <SelectItem value="offline">Offline</SelectItem>
+              </SelectContent>
+            </Select>
+            {formErrors.paymentMethod && (
+              <p className="text-sm text-red-500 mt-1">
+                {formErrors.paymentMethod}
+              </p>
+            )}
+          </div>
+
+          {paymentMethod === "online" && (
+            <div>
+              <Label htmlFor="paymentLink">Payment Link *</Label>
+              <Input
+                id="paymentLink"
+                placeholder="Enter Razor Pay payment link"
+                value={paymentLink}
+                onChange={(e) => setPaymentLink(e.target.value)}
+                className={formErrors.paymentLink ? "border-red-500" : ""}
+              />
+              {formErrors.paymentLink && (
+                <p className="text-sm text-red-500 mt-1">
+                  {formErrors.paymentLink}
+                </p>
+              )}
+            </div>
           )}
         </div>
 
         <div className="flex justify-between items-center">
           <div className="text-xl font-bold">
-            Total Amount: ₹{calculateTotal().toFixed(2)}
+            Total Amount: {getCurrencySymbol(currency)}
+            {calculateTotal().toFixed(2)}
           </div>
           <Button
             type="submit"

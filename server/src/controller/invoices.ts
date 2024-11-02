@@ -340,3 +340,39 @@ export const getAllInvoices = async (req: Request, res: Response) => {
   }
 };
 
+export const downloadInvoice = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.data as jwt.JwtPayload;
+    const { invoiceId } = req.params;
+    const invoice = await invoices.findOne({ _id: invoiceId });
+    if (!invoice) {
+      res.status(404).json({ message: "Invoice Not Found" });
+      return;
+    }
+    if (invoice && invoice.userId && invoice?.userId.toString() !== id) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const fileName = invoice.invoiceNumber + ".pdf";
+    const filePath = path.join("./public/pdf", fileName);
+
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ message: "Invoice file not found" });
+      return;
+    }
+
+    const pdfContent = fs.readFileSync(filePath, { encoding: "base64" });
+    console.log("pdfContent", pdfContent);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+    res.send(pdfContent);
+    return;
+
+  } catch (error) {
+    _500("Download Invoice Failed", (error as Error).message, res);
+    return;
+  }
+}
+
