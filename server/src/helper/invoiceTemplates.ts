@@ -20,9 +20,10 @@ class InvoiceMaker {
   currencySymbol: string;
 
   constructor(invoice: Invoice) {
+    console.log(invoice);
     this.invoice = invoice;
     this.fileName = `invoice-${invoice._id}.pdf`;
-    this.currencySymbol = getCurrencySymbol(invoice.clientInfo.currency);
+    this.currencySymbol = getCurrencySymbol(invoice?.clientInfo?.currency);
   }
 
   headerType1() {

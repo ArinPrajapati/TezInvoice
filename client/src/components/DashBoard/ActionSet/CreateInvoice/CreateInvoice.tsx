@@ -39,7 +39,7 @@ interface Client {
   name: string;
   email: string;
   address?: string;
-  currency?: string;
+  currency: string;
 }
 
 interface CreateInvoiceData {
@@ -102,6 +102,7 @@ const CreateInvoice = () => {
       _id: filteredClient?._id || "",
       name: filteredClient?.name || "",
       email: filteredClient?.email || "",
+      currency: filteredClient?.currency || "",
     });
     if (value) {
       setFormErrors((prev) => {
@@ -228,7 +229,7 @@ const CreateInvoice = () => {
       clientInfo: {
         name: selectedClient.name,
         email: selectedClient.email,
-        currency: selectedClient.currency || currency,
+        currency: selectedClient.currency,
       },
       invoiceNumber,
       jobDescription,
@@ -247,6 +248,7 @@ const CreateInvoice = () => {
 
     try {
       setIsSubmitting(true);
+      console.log(invoiceData);
       await InvoiceService.createInvoice(invoiceData);
 
       toast({

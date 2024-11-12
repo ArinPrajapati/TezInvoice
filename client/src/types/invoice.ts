@@ -2,13 +2,14 @@ export interface Invoice {
   _id?: string;
   invoiceNumber: string;
   userId?: string;
-  serviceName?: String;
-  ownerName?: String;
-  ownerEmail?: String;
+  serviceName?: string;
+  ownerName?: string;
+  ownerEmail?: string;
   clientInfo?: {
     name: string;
     email: string;
     address: string;
+    currency: string;
   };
   items: {
     description: string;

@@ -63,7 +63,7 @@ export const createInvoice = async (req: Request, res: Response) => {
       return
     }
 
-    // Convert total amount to client's currency
+    console.log(clientInfo);
     const client_total = await convertCurrency(
       totalAmount,
       currency,
@@ -74,7 +74,6 @@ export const createInvoice = async (req: Request, res: Response) => {
       return
     }
 
-    // Process all item currency conversions concurrently
     try {
       const clientItems = await Promise.all(
         items.map(async (item) => {
@@ -97,7 +96,6 @@ export const createInvoice = async (req: Request, res: Response) => {
         })
       );
 
-      // Create the invoice
       const invoice = await invoices.create({
         serviceName: user.serviceName,
         ownerName: user.name,
@@ -142,7 +140,8 @@ export const sendInvoice = async (req: Request, res: Response) => {
   try {
     const { id } = req.data as jwt.JwtPayload;
     const { invoiceId } = req.params;
-    const invoice = await invoices.findOne({ _id: invoiceId });
+
+    let invoice = await invoices.findOne({ _id: invoiceId });
     if (!invoice) {
       res.status(404).json({ message: "Invoice Not Found" });
       return;
@@ -152,30 +151,27 @@ export const sendInvoice = async (req: Request, res: Response) => {
       return;
     }
 
-    const CLient_invoice = {
-      ...invoice,
-      items: invoice.clientItems,
-      totalAmount: invoice.client_total,
-    }
-    const invoiceHelper = new InvoiceHelper(CLient_invoice as unknown as Invoice);
+    invoice.items = invoice.clientItems;
+    invoice.totalAmount = invoice.client_total;
 
-    await invoiceHelper.getCombination(1, 1, 1, 1);
+    const invoiceHelper = new InvoiceHelper(invoice as unknown as Invoice);
+    const combination = invoiceHelper.getCombination(1, 1, 1, 1);
     const fileName = invoiceHelper.invoiceMaker.fileName;
 
     if (!fileName) {
-      res.status(404).json({ message: "Invoice Not Found" });
+      res.status(500).json({ message: "Failed to generate invoice" });
       return;
     }
-    const filePath = path.join("./public/pdf", fileName);
 
-    console.log("filePath", filePath);
+    const filePath = path.join("./public/pdf", `invoice-${invoice._id}.pdf`);
+
+    // Wait for file to be generated and check its existence
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     if (!fs.existsSync(filePath)) {
-      res.status(404).json({ message: "Invoice file not found" });
+      res.status(500).json({ message: "Failed to generate invoice file" });
       return;
     }
-
-    const pdfContent = fs.readFileSync(filePath, { encoding: "base64" });
-    console.log("pdfContent", pdfContent);
 
     await sendEmail({
       from: "hello@demomailtrap.com",
@@ -183,10 +179,11 @@ export const sendInvoice = async (req: Request, res: Response) => {
       subject: "Invoice",
       text: "Invoice",
       html: invoiceTemplate(
-        invoice._id as unknown as string,
+        invoice.invoiceNumber as unknown as string,
         invoice.jobDescription as string,
         formatDate(invoice.dueDate?.toISOString() as string, "yyyy-MM-dd"),
-        invoice.totalAmount as unknown as string
+        invoice.totalAmount as unknown as string,
+        invoice.ownerName as string,
       ),
       attachments: [
         {
@@ -202,6 +199,7 @@ export const sendInvoice = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Invoice Sent" });
     return;
   } catch (error) {
+    console.log("error", error);
     _500("Send Invoice Failed", (error as Error).message, res);
     return;
   }

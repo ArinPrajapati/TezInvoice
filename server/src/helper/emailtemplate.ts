@@ -7,7 +7,30 @@ const magicLinkTemplate = (link: string) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Magic Link Login</title>
       <style>
-        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        /* Add your custom styles here */
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .max-w-lg { max-width: 32rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .mt-10 { margin-top: 2.5rem; }
+        .p-6 { padding: 1.5rem; }
+        .bg-white { background-color: white; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .text-2xl { font-size: 1.5rem; }
+        .font-semibold { font-weight: 600; }
+        .text-gray-800 { color: #1f2937; }
+        .mb-4 { margin-bottom: 1rem; }
+        .text-gray-700 { color: #374151; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .inline-block { display: inline-block; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .text-white { color: white; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .text-center { text-align: center; }
+        .font-medium { font-weight: 500; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; }
       </style>
     </head>
     <body class="bg-gray-100 my-10">
@@ -37,31 +60,27 @@ const verifyEmailTemplate = (link: string) => {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verify Email</title>
-   <style>
-        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
-      </style>
   </head>
-  <body class="bg-gray-100 text-gray-800">
-    <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">
+      <body style="background-color: #f3f4f6; color: #1f2937;">
+        <div style="max-width: 32rem; margin: 2.5rem auto; background-color: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <h2 style="font-size: 1.5rem; font-weight: bold; text-align: center; color: #2563eb; margin-bottom: 1.5rem;">
         Verify Your Email
       </h2>
-      <p class="text-gray-600 mb-4">
+          <p style="color: #4b5563; margin-bottom: 1rem;">
         Hi there, please verify your email address by clicking the button below.
       </p>
       <a
         href="${link}"
-        class="block text-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition"
+            style="display: block; text-align: center; background-color: #2563eb; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; text-decoration: none; margin: 1rem 0;"
       >
         Click Here to Verify
       </a>
-      <p class="text-gray-500 text-sm mt-6 text-center">
-        If you didn’t request this, you can safely ignore this email.
+          <p style="color: #6b7280; font-size: 0.875rem; margin-top: 1.5rem; text-align: center;">
+            If you didn't request this, you can safely ignore this email.
       </p>
     </div>
   </body>
 </html>
-
     `;
 };
 
@@ -69,7 +88,8 @@ const invoiceTemplate = (
   invoiceNumber: string,
   JobDescription: string,
   dueDate: string,
-  amountDue: string
+  amountDue: string,
+  by: string
 ) => {
   return `
     <!DOCTYPE html>
@@ -78,52 +98,46 @@ const invoiceTemplate = (
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice Template</title>
-   <style>
-        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
-      </style>
   </head>
-  <body class="bg-purple-50 min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-2xl w-full mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+      <body style="background-color: #faf5ff; min-height: 100vh; padding: 1.5rem;">
+        <div style="max-width: 42rem; width: 100%; margin: 0 auto; background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;">
       <!-- Header -->
-      <div class="bg-purple-600 p-6">
-        <h1 class="text-3xl font-bold text-white text-center">INVOICE</h1>
-        <p class="text-purple-200 text-center mt-2">#INV-2024-001</p>
+          <div style="background-color: #7c3aed; padding: 1.5rem;">
+            <h1 style="font-size: 1.875rem; font-weight: bold; color: white; text-align: center; margin: 0;">INVOICE</h1>
+            <p style="color: #e9d5ff; text-align: center; margin-top: 0.5rem;">${invoiceNumber}</p>
       </div>
       
       <!-- Content -->
-      <div class="p-8">
-        <!-- Job Description -->
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-purple-800 mb-4">Web Development Project</h2>
-          <div class="h-1 w-20 bg-purple-500 rounded"></div>
+          <div style="padding: 2rem;">
+            <div style="margin-bottom: 2rem;">
+              <h2 style="font-size: 1.5rem; font-weight: 600; color: #5b21b6; margin-bottom: 1rem;">${JobDescription}</h2>
+              <p style="font-size: 1rem; color: #6b7280; margin-bottom: 1rem;">Service Provider: ${by}</p>
+              <div style="height: 0.25rem; width: 5rem; background-color: #7c3aed; border-radius: 0.25rem;"></div>
         </div>
 
-        <!-- Invoice Details -->
-        <div class="grid grid-cols-2 gap-8 mb-8">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
           <div>
-            <h3 class="text-sm font-medium text-purple-600 uppercase mb-2">Due Date</h3>
-            <p class="text-gray-800">May 15, 2024</p>
+                <h3 style="font-size: 0.875rem; font-weight: 500; color: #7c3aed; text-transform: uppercase; margin-bottom: 0.5rem;">Due Date</h3>
+                <p style="color: #1f2937;">${dueDate}</p>
           </div>
           <div>
-            <h3 class="text-sm font-medium text-purple-600 uppercase mb-2">Amount Due</h3>
-            <p class="text-2xl font-bold text-gray-800">$2,500.00</p>
+                <h3 style="font-size: 0.875rem; font-weight: 500; color: #7c3aed; text-transform: uppercase; margin-bottom: 0.5rem;">Amount Due</h3>
+                <p style="font-size: 1.5rem; font-weight: bold; color: #1f2937;">${amountDue}</p>
           </div>
         </div>
 
-        <!-- Message -->
-        <div class="bg-purple-50 rounded-lg p-6 mb-8">
-          <p class="text-gray-700 leading-relaxed">
+            <div style="background-color: #faf5ff; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem;">
+              <p style="color: #4b5563; line-height: 1.625;">
             Thank you for choosing our services. Please find your invoice details above. Payment is due by the specified date.
           </p>
         </div>
 
-        <!-- Footer -->
-        <div class="border-t border-purple-100 pt-6">
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-2">
+            <div style="border-top: 1px solid #e9d5ff; padding-top: 1.5rem;">
+              <div style="text-align: center;">
+                <p style="font-size: 0.875rem; color: #4b5563; margin-bottom: 0.5rem;">
               Questions? We're here to help.
             </p>
-            <p class="text-purple-600 font-medium">support@company.com</p>
+                <p style="color: #7c3aed; font-weight: 500;">support@company.com</p>
           </div>
         </div>
       </div>
