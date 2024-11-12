@@ -1,15 +1,22 @@
-version: '0.0.1'
-
 services:
-  clinet:
-    build: client
+  # clinet:
+  #   build: client
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./client:/app
+  #   depends_on:
+  #     - backend
+  # backend:
+  #   build: server
+  #   ports:
+  #     - 4000:4000
+  mongo:
+    image: mongo
     ports:
-      - 3000:3000
+      - 27017:27017
     volumes:
-      - ./client:/app
-    depends_on:
-      - backend
-  backend:
-    build: server
-    ports:
-      - 4000:4000
+      - ./data:/data/db
+
+volumes:
+  data:

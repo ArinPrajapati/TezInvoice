@@ -73,7 +73,7 @@ const getStatusStyle = (status: InvoiceStatus) => {
 const formatDaysOverdue = (days: number): string => {
   if (days === 0) return "";
   if (days === 1) return "(1 day overdue)";
-  return `(₹{days} days overdue)`;
+  return `(${days} days overdue)`;
 };
 
 // Component States

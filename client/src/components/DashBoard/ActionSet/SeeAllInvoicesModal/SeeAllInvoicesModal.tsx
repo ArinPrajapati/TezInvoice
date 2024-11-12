@@ -38,6 +38,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { Invoice } from "@/types/invoice";
 import { InvoiceService } from "@/axios/service/invoiceService";
+import { getCurrencySymbol } from "@/lib/moneySymbols";
 
 const SeeAllInvoicesModal = () => {
   const [open, setOpen] = useState(false);
@@ -212,7 +213,8 @@ const SeeAllInvoicesModal = () => {
                     <TableCell>{invoice?.clientInfo?.name}</TableCell>
                     <TableCell>{format(invoice.createdAt!, "PPP")}</TableCell>
                     <TableCell>
-                      ₹{invoice.totalAmount && invoice.totalAmount.toFixed(2)}
+                      {getCurrencySymbol(invoice.currency)}
+                      {invoice.totalAmount && invoice.totalAmount.toFixed(2)}
                     </TableCell>
                     <TableCell>{invoice.status}</TableCell>
                   </TableRow>

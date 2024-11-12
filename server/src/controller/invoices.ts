@@ -10,7 +10,7 @@ import InvoiceHelper from "../helper/invoiceTemplates";
 import path from "path";
 import { invoiceTemplate } from "../helper/emailtemplate";
 import { formatDate } from "date-fns";
-import convertCurrency from "../helper/currecyConverter";
+import convertCurrency, { CurrencyConversionError } from "../helper/currecyConverter";
 
 export const createInvoice = async (req: Request, res: Response) => {
   try {
@@ -27,85 +27,111 @@ export const createInvoice = async (req: Request, res: Response) => {
       currency,
     } = req.body as Invoice;
 
-    if (
-      !jobDescription ||
-      !items ||
-      !totalAmount ||
-      !dueDate ||
-      !invoiceNumber ||
-      !paymentMethod ||
-      !currency ||
-      !clientInfo
-    ) {
-      res.status(400).json({ message: "Please fill all the fields" });
-      return;
-    }
-
-
-
-    let client_total;
-    let clientItems = [];
-
-    client_total = convertCurrency(totalAmount, currency, clientInfo.currency);
-    if (!client_total) {
-      res.status(400).json({ message: "Invalid currency" });
-      return;
-    }
-
-    clientItems = items.map((item) => {
-      let price = convertCurrency(item.price, currency, clientInfo.currency);
-      if (!price) {
-        res.status(400).json({ message: "Invalid currency" });
-        return;
-      }
-      return {
-        description: item.description,
-        quantity: item.quantity,
-        price,
-        subtotal: item.quantity * Number(price),
-      };
-    });
-
-
-
-    const user = await User.findOne({ _id: id });
-    if (!user) {
-      res.status(404).json({ message: "User Not Found" });
-      return;
-    }
-
-    if (user.isVerified === false) {
-      res.status(401).json({ message: "Please Verify Your Email" });
-      return;
-    }
-
-    const invoice = await invoices.create({
-      serviceName: user.serviceName,
-      ownerName: user.name,
-      jobDescription: jobDescription,
-      ownerEmail: user.email,
-      clientInfo,
+    // Validate required fields
+    const requiredFields = {
+      jobDescription,
       items,
       totalAmount,
       dueDate,
-      createdAt: createdAt ? new Date(createdAt) : new Date(),
-      userId: user._id,
-      status: "unpaid",
-      paymentLink: "",
       invoiceNumber,
-      paymentMethod: paymentMethod as "offline" | "online",
+      paymentMethod,
       currency,
-      clientItems,
-      client_total,
-    });
+      clientInfo,
+    };
 
-    if (!invoice) {
-      _500("Failed to create invoice", "The Problem is in db", res);
+    const missingFields = Object.entries(requiredFields)
+      .filter(([, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      res.status(400).json({
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
       return;
     }
 
-    res.status(200).json({ message: "Invoice Created" });
-    return;
+    // Validate user
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      res.status(404).json({ message: "User Not Found" });
+      return
+    }
+
+    if (!user.isVerified) {
+
+      res.status(401).json({ message: "Please Verify Your Email" });
+      return
+    }
+
+    // Convert total amount to client's currency
+    const client_total = await convertCurrency(
+      totalAmount,
+      currency,
+      clientInfo.currency
+    );
+    if (!client_total) {
+      res.status(400).json({ message: "Invalid currency conversion for total amount" });
+      return
+    }
+
+    // Process all item currency conversions concurrently
+    try {
+      const clientItems = await Promise.all(
+        items.map(async (item) => {
+          const price = await convertCurrency(
+            item.price,
+            currency,
+            clientInfo.currency
+          );
+
+          if (!price) {
+            throw new Error(`Invalid currency conversion for item: ${item.description}`);
+          }
+
+          return {
+            description: item.description,
+            quantity: item.quantity,
+            price,
+            subtotal: item.quantity * Number(price),
+          };
+        })
+      );
+
+      // Create the invoice
+      const invoice = await invoices.create({
+        serviceName: user.serviceName,
+        ownerName: user.name,
+        jobDescription,
+        ownerEmail: user.email,
+        clientInfo,
+        items,
+        totalAmount,
+        dueDate,
+        createdAt: createdAt ? new Date(createdAt) : new Date(),
+        userId: user._id,
+        status: "unpaid",
+        paymentLink: "",
+        invoiceNumber,
+        paymentMethod: paymentMethod as "offline" | "online",
+        currency,
+        clientItems,
+        client_total,
+      });
+
+      if (!invoice) {
+        _500("Failed to create invoice", "Database operation failed", res);
+        return
+      }
+
+      res.status(200).json({ message: "Invoice Created" });
+      return
+    } catch (conversionError) {
+      res.status(400).json({
+        message: "Currency conversion failed",
+        error: (conversionError as CurrencyConversionError).message
+      });
+      return
+    }
   } catch (error) {
     _500("Create Invoice Failed", (error as Error).message, res);
     return;

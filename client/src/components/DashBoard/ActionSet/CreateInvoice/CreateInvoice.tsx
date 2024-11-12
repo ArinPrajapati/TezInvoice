@@ -39,12 +39,14 @@ interface Client {
   name: string;
   email: string;
   address?: string;
+  currency?: string;
 }
 
 interface CreateInvoiceData {
   clientInfo: {
     name: string;
     email: string;
+    currency: string;
   };
   invoiceNumber: string;
   jobDescription: string;
@@ -226,6 +228,7 @@ const CreateInvoice = () => {
       clientInfo: {
         name: selectedClient.name,
         email: selectedClient.email,
+        currency: selectedClient.currency || currency,
       },
       invoiceNumber,
       jobDescription,
@@ -256,7 +259,7 @@ const CreateInvoice = () => {
       console.error("Error creating invoice:", error);
       toast({
         title: "Error",
-        description: "Failed to create invoice. Please try again.",
+        description: `Failed to create invoice.${(error as Error).message}`,
         variant: "destructive",
       });
     } finally {
