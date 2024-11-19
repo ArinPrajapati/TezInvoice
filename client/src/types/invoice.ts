@@ -8,7 +8,6 @@ export interface Invoice {
   clientInfo?: {
     name: string;
     email: string;
-    address: string;
     currency: string;
   };
   items: {

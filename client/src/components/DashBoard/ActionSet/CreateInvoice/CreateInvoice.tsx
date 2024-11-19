@@ -35,7 +35,7 @@ interface InvoiceItem {
 }
 
 interface Client {
-  _id: string;
+  _id?: string;
   name: string;
   email: string;
   address?: string;
@@ -318,7 +318,7 @@ const CreateInvoice = () => {
                   <SelectItem value=" ">No clients available</SelectItem>
                 ) : (
                   clients.map((client) => (
-                    <SelectItem key={client._id} value={client._id}>
+                    <SelectItem key={client._id || ""} value={client._id || ""}>
                       {client.name}
                     </SelectItem>
                   ))

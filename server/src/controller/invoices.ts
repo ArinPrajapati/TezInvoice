@@ -167,7 +167,7 @@ export const sendInvoice = async (req: Request, res: Response) => {
 
     // Wait for file to be generated and check its existence
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     if (!fs.existsSync(filePath)) {
       res.status(500).json({ message: "Failed to generate invoice file" });
       return;

@@ -25,16 +25,18 @@ export default function Signup() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Memoized change handler to prevent unnecessary re-renders
-  const handleChange = useCallback((event) => {
-    const { name, value } = event.target;
-    setFormState((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }, []);
+  const handleChange = useCallback(
+    (event: { target: { name: any; value: any } }) => {
+      const { name, value } = event.target;
+      setFormState((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    },
+    []
+  );
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 

@@ -5,7 +5,7 @@ import { Invoice } from "@/types/invoice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const page = () => {
+const Page = () => {
   const id = usePathname().split("/")[2];
   useEffect(() => {
     if (!id) {
@@ -23,4 +23,4 @@ const page = () => {
   }, [id]);
   return <SeeInvoicePage invoiceData={invoiceData} />;
 };
-export default page;
+export default Page;

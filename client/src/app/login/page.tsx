@@ -20,21 +20,32 @@ export default function Login() {
     }));
   }, []);
 
-  const handleSubmit = async (e) => {
+  interface FormState {
+    email: string;
+    password: string;
+    rememberMe: boolean;
+  }
+
+  interface ToastOptions {
+    title: string;
+    description: string;
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await AuthService.login(formState.email, formState.password);
       toast({
         title: "Success",
         description: "Logged in successfully",
-      });
+      } as ToastOptions);
 
       window.location.href = "/dashboard";
     } catch (error) {
       toast({
         title: "Error",
         description: (error as Error).message,
-      });
+      } as ToastOptions);
     }
     console.log("Login attempt:", formState);
   };

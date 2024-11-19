@@ -187,7 +187,7 @@ class ApiClient {
       method: "POST",
       url,
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: new axios.AxiosHeaders({ "Content-Type": "multipart/form-data" }),
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(

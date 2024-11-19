@@ -29,7 +29,7 @@ import {
 import { ClientService } from "@/axios/service/clientService";
 
 interface Client {
-  id: number;
+  _id: number;    
   name: string;
   email: string;
   phoneNumber: string;
@@ -228,7 +228,7 @@ const SeeAllClientsModal = () => {
                   <TableBody>
                     {paginatedClients.map((client) => (
                       <TableRow
-                        key={client.id}
+                        key={client._id}
                         className="hover:bg-purple-50 cursor-pointer"
                       >
                         <TableCell className="font-medium">
