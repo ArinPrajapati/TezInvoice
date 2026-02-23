@@ -72,4 +72,23 @@ export class InvoiceService {
     const response = await api.get<getAllInvoicesResponse>("/invoices?status=unpaid");
     return response.data;
   }
+  static async downloadInvoice(id: string): Promise<void> {
+    const response = await api.get(`/invoices/download/${id}`, {
+      responseType: "blob",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
+    const blob = new Blob([response.data], { type: "application/pdf" });
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `invoice-${id}.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up
+    document.body.removeChild(link);
+  }
 }

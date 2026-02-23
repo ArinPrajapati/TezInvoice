@@ -147,4 +147,130 @@ const invoiceTemplate = (
   `;
 };
 
-export { magicLinkTemplate, verifyEmailTemplate, invoiceTemplate };
+// Classic invoice template with table layout and serif font
+const classicInvoiceTemplate = (
+  invoiceNumber: string,
+  JobDescription: string,
+  dueDate: string,
+  amountDue: string,
+  by: string
+) => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice #${invoiceNumber}</title>
+</head>
+<body style="font-family: Georgia, serif; padding: 2rem; color: #000;">
+  <h1>Invoice #${invoiceNumber}</h1>
+  <p><strong>Description:</strong> ${JobDescription}</p>
+  <p><strong>Provider:</strong> ${by}</p>
+  <table style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+    <thead>
+      <tr>
+        <th style="border:1px solid #000; padding:8px; text-align:left;">Due Date</th>
+        <th style="border:1px solid #000; padding:8px; text-align:left;">Amount Due</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border:1px solid #000; padding:8px;">${dueDate}</td>
+        <td style="border:1px solid #000; padding:8px;">${amountDue}</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
+  `;
+};
+
+// Modern invoice template with accent colors and grid
+const modernInvoiceTemplate = (
+  invoiceNumber: string,
+  JobDescription: string,
+  dueDate: string,
+  amountDue: string,
+  by: string
+) => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice #${invoiceNumber}</title>
+</head>
+<body style="font-family: Arial, sans-serif; padding: 2rem; background-color: #f0f4f8;">
+  <div style="max-width:600px; margin:0 auto; background:white; border-radius:8px; overflow:hidden;">
+    <header style="background-color:#2a4365; color:white; padding:1rem; text-align:center;">
+      <h2>Invoice #${invoiceNumber}</h2>
+    </header>
+    <main style="padding:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div>
+        <h3 style="margin:0; color:#2a4365;">Description</h3>
+        <p style="margin:0.5rem 0;">${JobDescription}</p>
+      </div>
+      <div>
+        <h3 style="margin:0; color:#2a4365;">Provider</h3>
+        <p style="margin:0.5rem 0;">${by}</p>
+      </div>
+      <div>
+        <h3 style="margin:0; color:#2a4365;">Due Date</h3>
+        <p style="margin:0.5rem 0;">${dueDate}</p>
+      </div>
+      <div>
+        <h3 style="margin:0; color:#2a4365;">Amount Due</h3>
+        <p style="margin:0.5rem 0; font-size:1.25rem; font-weight:bold;">${amountDue}</p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+  `;
+};
+
+// Minimalist invoice template with clean, black-and-white layout
+const minimalistInvoiceTemplate = (
+  invoiceNumber: string,
+  JobDescription: string,
+  dueDate: string,
+  amountDue: string,
+  by: string
+) => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice #${invoiceNumber}</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:2rem; color:#333; }
+    .container { max-width:600px; margin:0 auto; }
+    .header { text-align:center; margin-bottom:2rem; }
+    .header h1 { margin:0; font-weight:300; }
+    .details p { margin:0.5rem 0; }
+    .footer { margin-top:3rem; text-align:center; font-size:0.875rem; color:#777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Invoice #${invoiceNumber}</h1>
+    </div>
+    <div class="details">
+      <p><strong>Description:</strong> ${JobDescription}</p>
+      <p><strong>Provider:</strong> ${by}</p>
+      <p><strong>Due Date:</strong> ${dueDate}</p>
+      <p><strong>Amount Due:</strong> ${amountDue}</p>
+    </div>
+    <div class="footer">Thank you for your business.</div>
+  </div>
+</body>
+</html>
+  `;
+};
+
+export { magicLinkTemplate, verifyEmailTemplate, invoiceTemplate, classicInvoiceTemplate, modernInvoiceTemplate, minimalistInvoiceTemplate };

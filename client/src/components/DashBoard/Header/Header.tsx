@@ -47,9 +47,8 @@ export default function Header() {
     <>
       <Button
         variant="ghost"
-        className={`justify-start ${
-          isMobile ? "w-full" : ""
-        } text-purple-700 hover:text-purple-900 hover:bg-purple-50`}
+        className={`justify-start ${isMobile ? "w-full" : ""
+          } text-purple-700 hover:text-purple-900 hover:bg-purple-50`}
         onClick={() => setIsProfileOpen(true)}
       >
         <User className="mr-2 h-4 w-4" />
@@ -57,9 +56,8 @@ export default function Header() {
       </Button>
       <Button
         variant="ghost"
-        className={`justify-start ${
-          isMobile ? "w-full" : ""
-        } text-purple-700 hover:text-purple-900 hover:bg-purple-50`}
+        className={`justify-start ${isMobile ? "w-full" : ""
+          } text-purple-700 hover:text-purple-900 hover:bg-purple-50`}
         onClick={() => setIsBillingOpen(true)}
       >
         <CreditCard className="mr-2 h-4 w-4" />
@@ -67,9 +65,8 @@ export default function Header() {
       </Button>
       <Button
         variant="ghost"
-        className={`justify-start ${
-          isMobile ? "w-full" : ""
-        } text-red-600 hover:text-red-700 hover:bg-red-50`}
+        className={`justify-start ${isMobile ? "w-full" : ""
+          } text-red-600 hover:text-red-700 hover:bg-red-50`}
       >
         <LogOut className="mr-2 h-4 w-4" />
         Log out
@@ -102,7 +99,7 @@ export default function Header() {
                 </div>
               </SheetContent>
             </Sheet>
-            <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+            <h1 className="text-xl font-semibold text-white">TezInvoice</h1>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">

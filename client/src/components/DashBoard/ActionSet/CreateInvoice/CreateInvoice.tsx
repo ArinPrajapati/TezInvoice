@@ -200,9 +200,9 @@ const CreateInvoice = () => {
       subtotal:
         field === "quantity" || field === "price"
           ? (field === "quantity"
-              ? Number(updatedValue)
-              : newItems[index].quantity) *
-            (field === "price" ? Number(updatedValue) : newItems[index].price)
+            ? Number(updatedValue)
+            : newItems[index].quantity) *
+          (field === "price" ? Number(updatedValue) : newItems[index].price)
           : newItems[index].quantity * newItems[index].price,
     };
 
@@ -296,9 +296,8 @@ const CreateInvoice = () => {
             >
               <SelectTrigger
                 id="client"
-                className={`${
-                  formErrors.client || clientsError ? "border-red-500" : ""
-                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`${formErrors.client || clientsError ? "border-red-500" : ""
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <SelectValue placeholder="Select a client" />
               </SelectTrigger>

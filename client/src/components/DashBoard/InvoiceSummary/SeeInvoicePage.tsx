@@ -34,6 +34,15 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
       className: "",
     });
   };
+
+  const handleDownloadInvoice = async ({ id }: { id: string }) => {
+    await InvoiceService.downloadInvoice(id);
+    toast({
+      title: "Invoice Downloaded",
+      description: `Invoice ${invoiceData._id} has been downloaded successfully`,
+      className: "",
+    });
+  };
   return (
     <div className="container mx-auto p-6">
       <Link href={"/dashboard"}>
@@ -113,7 +122,9 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline">
+          <Button variant="outline" onClick={
+            () => handleDownloadInvoice({ id: invoiceData._id || "" })
+          }>
             <Download className="mr-2 h-4 w-4" /> Download PDF
           </Button>
           <Button
@@ -126,7 +137,7 @@ const SeeInvoicePage = ({ invoiceData }: { invoiceData: Invoice }) => {
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </div >
   );
 };
 

@@ -1,17 +1,17 @@
 services:
-  # clinet:
-  #   build: client
-  #   ports:
-  #     - 3000:3000
-  #   volumes:
-  #     - ./client:/app
-  #   depends_on:
-  #     - backend
-  # backend:
-  #   build: server
-  #   ports:
-  #     - 4000:4000
-  mongo:
+   # clinet:
+   #   build: client
+   #   ports:
+   #    - 3000:3000
+   #   volumes:
+   #    - ./client:/app
+   #   depends_on:
+   #    - backend 
+   # backend:
+   #  build: server
+   #  ports:
+   #     - 4000:4000
+   # mongo:
     image: mongo
     ports:
       - 27017:27017

@@ -232,7 +232,6 @@ class InvoiceMaker {
     fileName: string
   ) {
     const dir = "./public/pdf";
-
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -351,5 +350,13 @@ class InvoiceHelper {
     }
   }
 }
+
+// Export available template types for frontend selection
+export const TEMPLATE_TYPES = {
+  header: ["headerType1", "headerType2", "headerType3"],
+  clientInfo: ["clientInfoType1", "clientInfoType2", "clientInfoType3"],
+  table: ["tableType1", "tableType2", "tableType3"],
+  footer: ["footerType1", "footerType2", "footerType3"],
+};
 
 export default InvoiceHelper;

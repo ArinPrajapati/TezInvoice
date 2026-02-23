@@ -3,6 +3,7 @@ import InvoiceSummary from "./InvoiceSummary/InvoiceSummary";
 import UnPaidTable from "./UnPaidTable/UnPaidTable";
 import ActionSet from "./ActionSet/ActionSet";
 import Header from "./Header/Header";
+import NavHeader from "@/components/nav/Header";
 
 const Main = () => {
   return (
