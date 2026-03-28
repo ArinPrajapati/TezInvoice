@@ -10,23 +10,34 @@ type PublicRoute = (typeof PUBLIC_ROUTES)[number];
 
 const Root = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { setPath, setLogin, setPublicRoute, setLoginData, setToken } =
-    useStore();
-  const authToken = localStorage.getItem("authToken");
+  const { setPath, setLogin, setPublicRoute, setLoginData } = useStore();
+  const [authToken, setAuthToken] = React.useState<string | null>(null);
+  const [isClient, setIsClient] = React.useState(false);
 
   const pathname = usePathname();
+
+  // Load authToken from localStorage only on client side
+  React.useEffect(() => {
+    setIsClient(true);
+    setAuthToken(localStorage.getItem("authToken"));
+  }, []);
 
   const isPublicRoute = (path: string): path is PublicRoute => {
     return PUBLIC_ROUTES.includes(path as PublicRoute);
   };
 
   const handleAuthError = () => {
-    localStorage.removeItem("authToken");
+    if (isClient) {
+      localStorage.removeItem("authToken");
+    }
     setLogin(false);
     router.push("/login");
   };
 
   React.useEffect(() => {
+    // Only run authentication logic on client side
+    if (!isClient) return;
+
     const authenticateUser = async () => {
       try {
         setPath(pathname);
@@ -61,7 +72,7 @@ const Root = ({ children }: { children: React.ReactNode }) => {
     };
 
     authenticateUser();
-  }, []);
+  }, [authToken, pathname, isClient]);
 
   return (
     <>

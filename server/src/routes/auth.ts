@@ -8,6 +8,7 @@ import {
   verifyEmail,
   verifyEmailSend,
   getUser,
+  refreshToken,
 } from "../controller/auth";
 import { jwtMiddleware } from "../middleware/jwt";
 
@@ -21,5 +22,6 @@ router.put("/update", jwtMiddleware, update);
 router.put("/update-password", jwtMiddleware, updatePassword);
 router.post("/verify-email-send", jwtMiddleware, verifyEmailSend);
 router.post("/verify-email", verifyEmail);
+router.post("/refresh", refreshToken);
 
 export default router;

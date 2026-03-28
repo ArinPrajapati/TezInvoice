@@ -68,6 +68,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
     const getUser = await User.findOne({ email });
     if (!getUser) {
       res.status(400).json({ message: "User with this email does not exist" });
+      return;
     }
     const isMatch = await bcrypt.compare(password, getUser?.password || "");
 
@@ -75,6 +76,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({
         message: "Invalid Password ",
       });
+      return;
     }
     const token = jwt.sign(
       {
@@ -89,7 +91,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
       message: "Login Successfull",
       token: token,
     });
-    return
+    return;
   } catch (error: any) {
     _500("Login Failed", error.message, res);
   }
@@ -102,6 +104,7 @@ const magicLogin = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({
         message: "Please fill all the fields",
       });
+      return;
     }
 
     const user = await User.findOne({ email });
@@ -109,6 +112,7 @@ const magicLogin = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({
         message: "User Not Found ",
       });
+      return;
     }
 
     const token = {
@@ -128,7 +132,7 @@ const magicLogin = async (req: Request, res: Response): Promise<void> => {
       JSON.stringify(token)
     )}`;
     await sendEmail({
-      from: "oleta73@ethereal.email",
+      from: process.env.EMAIL_FROM || "noreply@example.com",
       to: email,
       subject: "Magic Login Link",
       text: `Click on the link to login to your account ${link}`,
@@ -207,7 +211,7 @@ const verifyEmailSend = async (req: Request, res: Response): Promise<void> => {
     }
     const encryptId = cryptr.encrypt(user._id.toString());
     sendEmail({
-      from: "oleta73@ethereal.email",
+      from: process.env.EMAIL_FROM || "noreply@example.com",
       to: user.email,
       subject: "Verify Email",
       text: "Verify Email",
@@ -257,6 +261,43 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
     _500("Get User Failed", (error as Error).message, res);
   }
 };
+
+const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      res.status(400).json({ message: "Refresh token is required" });
+      return;
+    }
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET as jwt.Secret
+    ) as jwt.JwtPayload;
+
+    if (!decoded || !decoded.id) {
+      res.status(401).json({ message: "Invalid refresh token" });
+      return;
+    }
+
+    const user = await User.findOne({ _id: decoded.id });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET as jwt.Secret,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({ token });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
 export {
   signup,
   login,
@@ -266,4 +307,5 @@ export {
   verifyEmailSend,
   verifyEmail,
   getUser,
+  refreshToken,
 };

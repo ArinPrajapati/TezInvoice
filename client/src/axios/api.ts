@@ -28,7 +28,7 @@ class ApiClient {
   constructor(
     private baseURL: string = process.env.API_BASE_URL ||
       "http://localhost:4000/api",
-    private timeout: number = 30000
+    private timeout: number = 30000,
   ) {
     this.client = this.initializeAxios();
   }
@@ -49,12 +49,14 @@ class ApiClient {
   private setupInterceptors(client: AxiosInstance): void {
     client.interceptors.request.use(
       (config: RequestConfig) => {
-        const token = localStorage.getItem("authToken");
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("authToken");
+          if (token) config.headers.Authorization = `Bearer ${token}`;
+        }
         config.params = { ...config.params, _t: new Date().getTime() };
         return config;
       },
-      (error: AxiosError) => Promise.reject(this.handleError(error))
+      (error: AxiosError) => Promise.reject(this.handleError(error)),
     );
 
     client.interceptors.response.use(
@@ -69,8 +71,8 @@ class ApiClient {
           await new Promise((resolve) =>
             setTimeout(
               resolve,
-              1000 * Math.pow(2, originalRequest.retryCount ?? 0)
-            )
+              1000 * Math.pow(2, originalRequest.retryCount ?? 0),
+            ),
           ); // Exponential backoff
           return client(originalRequest);
         }
@@ -79,26 +81,28 @@ class ApiClient {
           error.response?.status === 401 &&
           !originalRequest.url?.includes("refresh")
         ) {
-          const refreshToken = localStorage.getItem("refreshToken");
-          if (refreshToken) {
-            try {
-              const { data } = await this.post<{ token: string }>(
-                "/auth/refresh",
-                { refreshToken }
-              );
-              localStorage.setItem("authToken", data.token);
-              originalRequest.headers.Authorization = `Bearer ${data.token}`;
-              return client(originalRequest);
-            } catch {
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("refreshToken");
-              window.location.href = "/login";
+          if (typeof window !== "undefined") {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (refreshToken) {
+              try {
+                const { data } = await this.post<{ token: string }>(
+                  "/auth/refresh",
+                  { refreshToken },
+                );
+                localStorage.setItem("authToken", data.token);
+                originalRequest.headers.Authorization = `Bearer ${data.token}`;
+                return client(originalRequest);
+              } catch {
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("refreshToken");
+                window.location.href = "/login";
+              }
             }
           }
         }
 
         return Promise.reject(this.handleError(error));
-      }
+      },
     );
   }
 
@@ -126,7 +130,7 @@ class ApiClient {
   }
 
   private async request<T>(
-    config: InternalAxiosRequestConfig
+    config: InternalAxiosRequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.client.request<T>(config);
@@ -178,7 +182,7 @@ class ApiClient {
   public async uploadFile<T>(
     url: string,
     file: File,
-    onProgress?: (percentage: number) => void
+    onProgress?: (percentage: number) => void,
   ): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append("file", file);
@@ -187,11 +191,13 @@ class ApiClient {
       method: "POST",
       url,
       data: formData,
-      headers: new axios.AxiosHeaders({ "Content-Type": "multipart/form-data" }),
+      headers: new axios.AxiosHeaders({
+        "Content-Type": "multipart/form-data",
+      }),
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }

@@ -6,7 +6,7 @@ import cors from "cors";
 import corn from "node-cron"
 import { updateExchangeRates } from "./controller/exchangeRates";
 const corsOptions = {
-  origin: "*", // Allow all origins. Adjust this as needed for security.
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
@@ -24,6 +24,7 @@ app.get("/", (req, res) => {
 
 corn.schedule('0 0 * * *', async () => updateExchangeRates());
 app.use("/api", routes);
-app.listen(4000, () => {
-  console.log("Server is running on port 4000");
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

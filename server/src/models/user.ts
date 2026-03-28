@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
-      required: true,
     },
     isVerified: {
       type: Boolean,
@@ -32,12 +31,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["Free", "Professional", "Unlimited"],
       default: "Free",
-      required: true,
     },
     currency: {
       type: String,
       default: "USD",
-      required: true,
     },
     invoicesLimit: {
       type: Number,

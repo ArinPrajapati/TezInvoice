@@ -9,8 +9,10 @@ import fs from "fs";
 import InvoiceHelper from "../helper/invoiceTemplates";
 import path from "path";
 import { invoiceTemplate } from "../helper/emailtemplate";
-import { formatDate } from "date-fns";
-import convertCurrency, { CurrencyConversionError } from "../helper/currecyConverter";
+import { format } from "date-fns";
+import convertCurrency, {
+  CurrencyConversionError,
+} from "../helper/currecyConverter";
 
 export const createInvoice = async (req: Request, res: Response) => {
   try {
@@ -54,24 +56,24 @@ export const createInvoice = async (req: Request, res: Response) => {
     const user = await User.findOne({ _id: id });
     if (!user) {
       res.status(404).json({ message: "User Not Found" });
-      return
+      return;
     }
 
     if (!user.isVerified) {
-
       res.status(401).json({ message: "Please Verify Your Email" });
-      return
+      return;
     }
 
-    console.log(clientInfo);
     const client_total = await convertCurrency(
       totalAmount,
       currency,
-      clientInfo.currency
+      clientInfo.currency,
     );
     if (!client_total) {
-      res.status(400).json({ message: "Invalid currency conversion for total amount" });
-      return
+      res
+        .status(400)
+        .json({ message: "Invalid currency conversion for total amount" });
+      return;
     }
 
     try {
@@ -80,11 +82,13 @@ export const createInvoice = async (req: Request, res: Response) => {
           const price = await convertCurrency(
             item.price,
             currency,
-            clientInfo.currency
+            clientInfo.currency,
           );
 
           if (!price) {
-            throw new Error(`Invalid currency conversion for item: ${item.description}`);
+            throw new Error(
+              `Invalid currency conversion for item: ${item.description}`,
+            );
           }
 
           return {
@@ -93,7 +97,7 @@ export const createInvoice = async (req: Request, res: Response) => {
             price,
             subtotal: item.quantity * Number(price),
           };
-        })
+        }),
       );
 
       const invoice = await invoices.create({
@@ -118,17 +122,17 @@ export const createInvoice = async (req: Request, res: Response) => {
 
       if (!invoice) {
         _500("Failed to create invoice", "Database operation failed", res);
-        return
+        return;
       }
 
       res.status(200).json({ message: "Invoice Created" });
-      return
+      return;
     } catch (conversionError) {
       res.status(400).json({
         message: "Currency conversion failed",
-        error: (conversionError as CurrencyConversionError).message
+        error: (conversionError as CurrencyConversionError).message,
       });
-      return
+      return;
     }
   } catch (error) {
     _500("Create Invoice Failed", (error as Error).message, res);
@@ -165,23 +169,35 @@ export const sendInvoice = async (req: Request, res: Response) => {
 
     const filePath = path.join("./public/pdf", `invoice-${invoice._id}.pdf`);
 
-    // Wait for file to be generated and check its existence
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait for file to be generated with proper async handling
+    const maxWaitTime = 5000;
+    const checkInterval = 100;
+    let fileExists = false;
+    let waitedTime = 0;
 
-    if (!fs.existsSync(filePath)) {
+    while (waitedTime < maxWaitTime) {
+      if (fs.existsSync(filePath)) {
+        fileExists = true;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      waitedTime += checkInterval;
+    }
+
+    if (!fileExists) {
       res.status(500).json({ message: "Failed to generate invoice file" });
       return;
     }
 
     await sendEmail({
       from: "hello@demomailtrap.com",
-      to: "arinprajapati78@gmail.com",
+      to: invoice.clientInfo?.email || "default@example.com",
       subject: "Invoice",
       text: "Invoice",
       html: invoiceTemplate(
         invoice.invoiceNumber as unknown as string,
         invoice.jobDescription as string,
-        formatDate(invoice.dueDate?.toISOString() as string, "yyyy-MM-dd"),
+        format(invoice.dueDate?.toISOString() as string, "yyyy-MM-dd"),
         invoice.totalAmount as unknown as string,
         invoice.ownerName as string,
       ),
@@ -199,7 +215,6 @@ export const sendInvoice = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Invoice Sent" });
     return;
   } catch (error) {
-    console.log("error", error);
     _500("Send Invoice Failed", (error as Error).message, res);
     return;
   }
@@ -335,7 +350,6 @@ export const getAllInvoices = async (req: Request, res: Response) => {
       if (!isNaN(formattedDate.getTime())) {
         query.createdAt = { $gte: formattedDate };
       } else {
-        console.error("Invalid date format:", date);
         res.status(400).json({ message: "Invalid date format" });
         return;
       }
@@ -344,8 +358,6 @@ export const getAllInvoices = async (req: Request, res: Response) => {
     if (status) {
       query.status = status;
     }
-
-    console.log("Query:", query);
 
     const invoicesList = await invoices.find(query).skip(skip).limit(limitNum);
     const totalInvoices = await invoices.countDocuments(query);
@@ -387,16 +399,13 @@ export const downloadInvoice = async (req: Request, res: Response) => {
     }
 
     const pdfContent = fs.readFileSync(filePath, { encoding: "base64" });
-    console.log("pdfContent", pdfContent);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
     res.send(pdfContent);
     return;
-
   } catch (error) {
     _500("Download Invoice Failed", (error as Error).message, res);
     return;
   }
-}
-
+};

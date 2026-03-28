@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,11 +24,28 @@ import { getInitials } from "@/lib/getInitials";
 import useStore from "@/store/store";
 import ProfileModal from "./modals/ProfileModal";
 import BillingModal from "./modals/BillingModal";
+import { InvoiceService } from "@/axios/service/invoiceService";
 
 export default function Header() {
   const { loginData } = useStore();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
+  const [invoiceCount, setInvoiceCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchInvoiceCount = async () => {
+      try {
+        const response = await InvoiceService.getAllInvoices({});
+        setInvoiceCount(response.totalInvoices);
+      } catch (error) {
+        console.error("Failed to fetch invoice count:", error);
+      }
+    };
+
+    if (loginData._id) {
+      fetchInvoiceCount();
+    }
+  }, [loginData._id]);
 
   const getAccountLevelStyles = (level: string) => {
     switch (level) {
@@ -116,7 +133,7 @@ export default function Header() {
               variant="secondary"
               className="px-2 py-1 text-xs font-medium bg-white/10 text-white hover:bg-white/20 transition-colors duration-200"
             >
-              Invoices: {2}
+              Invoices: {invoiceCount}
             </Badge>
 
             <Button
